@@ -6,4 +6,6 @@ public interface HistoryDataWao {
 
 	CryptoPair getHistoHour(String currency, String quoteCurrency, int aggregate, String exchange);
 	
+	void init();
+	
 }

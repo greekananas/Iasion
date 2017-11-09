@@ -15,11 +15,21 @@ public class HistoryDataWaoImpl implements HistoryDataWao {
 	private static Logger log = Logger.getLogger(HistoryDataWaoImpl.class);
 	
 	@Override
+	public void init() {
+		restTemplate = new RestTemplate();
+		mapper =  new ObjectMapper();	
+	}
+	
+	@Override
 	public CryptoPair getHistoHour(String currency, String quoteCurrency, int aggregate, String exchange) {
 
+		log.error(" getHistoHour");
+		
 		String url = "https://min-api.cryptocompare.com/data/histohour?fsym="+currency.toUpperCase()+"&tsym="+quoteCurrency.toUpperCase()+"&aggregate="+aggregate+"&e="+exchange;
 		
-		 CryptoPair dto = null;
+		log.error(" url="+url);
+		
+		CryptoPair dto = null;
 		
 		try {
 	
@@ -34,5 +44,6 @@ public class HistoryDataWaoImpl implements HistoryDataWao {
 		
 		return dto;
 	}
+
 
 }
