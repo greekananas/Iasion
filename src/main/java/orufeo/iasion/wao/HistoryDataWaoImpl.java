@@ -5,7 +5,7 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.springframework.web.client.RestTemplate;
 
 import lombok.Setter;
-import orufeo.iasion.data.dto.CryptoPair;
+import orufeo.iasion.data.dto.CryptoPairDto;
 
 public class HistoryDataWaoImpl implements HistoryDataWao {
 
@@ -21,7 +21,7 @@ public class HistoryDataWaoImpl implements HistoryDataWao {
 	}
 	
 	@Override
-	public CryptoPair getHistoHour(String currency, String quoteCurrency, int aggregate, String exchange) {
+	public CryptoPairDto getHistoHour(String currency, String quoteCurrency, int aggregate, String exchange) {
 
 		log.error(" getHistoHour");
 		
@@ -29,13 +29,13 @@ public class HistoryDataWaoImpl implements HistoryDataWao {
 		
 		log.error(" url="+url);
 		
-		CryptoPair dto = null;
+		CryptoPairDto dto = null;
 		
 		try {
 	
 		  	String forObject = restTemplate.getForObject(url, String.class);
 				  	
-		    dto = mapper.readValue(forObject, CryptoPair.class);
+		    dto = mapper.readValue(forObject, CryptoPairDto.class);
 		 		
 		} catch (Exception e) {
 	 		log.error("Problem getHistoHour:",e);

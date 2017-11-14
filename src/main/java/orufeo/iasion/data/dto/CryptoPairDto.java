@@ -6,12 +6,12 @@ import org.codehaus.jackson.annotate.JsonProperty;
 
 import lombok.Getter;
 import lombok.Setter;
-import orufeo.iasion.data.objects.ConversionType;
-import orufeo.iasion.data.objects.Ohclv;
+import orufeo.iasion.data.objects.mapping.ConversionType;
+import orufeo.iasion.data.objects.mapping.Ohclv;
 
 @Getter
 @Setter
-public class CryptoPair {
+public class CryptoPairDto {
 
 	@JsonProperty("Response")
 	private String response ;

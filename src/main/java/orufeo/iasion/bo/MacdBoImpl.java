@@ -1,15 +1,17 @@
 package orufeo.iasion.bo;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import lombok.Setter;
-import orufeo.iasion.data.dto.CryptoPair;
-import orufeo.iasion.data.objects.MacdSettings;
-import orufeo.iasion.data.objects.MobileAverageData;
-import orufeo.iasion.data.objects.Ohclv;
-import orufeo.iasion.data.objects.Order;
-import orufeo.iasion.data.objects.WalletSettings;
+import orufeo.iasion.data.dto.CryptoPairDto;
+import orufeo.iasion.data.objects.analysis.MacdResult;
+import orufeo.iasion.data.objects.analysis.MacdSettings;
+import orufeo.iasion.data.objects.analysis.MacdTrend;
+import orufeo.iasion.data.objects.analysis.MacdTrigger;
+import orufeo.iasion.data.objects.analysis.MobileAverageData;
+import orufeo.iasion.data.objects.mapping.Ohclv;
 import orufeo.iasion.utils.MathFunctions;
 import orufeo.iasion.utils.MathFunctionsImpl;
 import orufeo.iasion.wao.HistoryDataWao;
@@ -20,29 +22,154 @@ public class MacdBoImpl implements MacdBo {
 	@Setter private HistoryDataWao historyDataWao;
 	@Setter private MathFunctions mathFunctions;
 
-	
+
 	@Override
 	public void init() {
-		
+
 		historyDataWao = new HistoryDataWaoImpl();
 		historyDataWao.init();
 		mathFunctions = new MathFunctionsImpl();
-		
+
 	}
-	
+
+
+
 	@Override
-	public Order analyseCryptoPair(String currency, String quoteCurrency, int aggregate, String exchange, MacdSettings macdSettings, WalletSettings walletSettings) {
+	public MacdTrend analyzeTrend(String currency, String quoteCurrency, int aggregate, String exchange, MacdSettings macdSettings) {
 
-		CryptoPair data = historyDataWao.getHistoHour(currency, quoteCurrency, aggregate, exchange);
+		MacdResult result = computeMacd( currency,  quoteCurrency,  aggregate,  exchange,  macdSettings); 
 
-		//simple average SMA of the n first lines to initiate the EMA
-		/*	List<Double> slowValues = getInitValues(data, macdSettings.getSlowLength(),0);
-		List<Double> fastValues = getInitValues(data, macdSettings.getFastLength(),0);
-
-		Double meanInitSlow = mathFunctions.mean(slowValues);
-		Double meanInitFast = mathFunctions.mean(fastValues);
-		 */	
+		List<String> trend  = new ArrayList<String>();
 		
+		for( int i=0; i < result.getMacd().size(); i++  ) {
+
+			if (result.getDelta().get(i) > 0 && result.getDelta().get(i-1) < 0)
+				trend.add("long");
+			else if (result.getDelta().get(i) < 0 && result.getDelta().get(i-1) > 0)
+				trend.add("short");
+			else
+				trend.add("none");
+
+		}
+
+		MacdTrend trends = new MacdTrend(result);
+		trends.setTrend(trend);
+
+		displayTrend(trends);
+
+		return trends;
+	}
+
+	@Override
+	public MacdTrend analyzeTrigger(String currency, String quoteCurrency, int aggregate, String exchange, MacdSettings macdSettings, MacdTrend trends) {
+
+		MacdResult result = computeMacd(currency, quoteCurrency, aggregate, exchange, macdSettings); 
+
+		MacdTrigger triggers = new MacdTrigger(result);
+
+		fillTrends(triggers, trends);
+
+		List<String> trigger = new ArrayList<String>();
+		trigger.add("none");
+		
+		for( int i=1; i < result.getMacd().size(); i++  ) {
+
+			if (triggers.getTrend().get(i) != triggers.getTrend().get(i-1))
+					trigger.add(triggers.getTrend().get(i) );
+			else if (triggers.getTrend().get(i).equals("long")) {
+				if (triggers.getDelta().get(i) > 0 && triggers.getDelta().get(i-1) < 0 )
+					trigger.add("prise long");
+				else if (triggers.getDelta().get(i) < 0 && triggers.getDelta().get(i-1) > 0 )
+					trigger.add("cloture long");
+				else 
+					trigger.add("none");
+			} else if (triggers.getTrend().get(i).equals("short")) {
+				if (triggers.getDelta().get(i) < 0 && triggers.getDelta().get(i-1) > 0 )
+					trigger.add("prise short");
+				else if (triggers.getDelta().get(i) > 0 && triggers.getDelta().get(i-1) < 0 )
+					trigger.add("cloture short");
+				else
+					trigger.add("none");
+			} else
+					trigger.add("none");
+
+		}
+
+		triggers.setTrigger(trigger);
+
+		displayTrigger(triggers);
+
+
+		return null;
+	}
+
+
+
+
+
+	/******************
+	 * 
+	 * 
+	 *  PRIVATE METHODS
+	 * 
+	 * 
+	 ******************/
+
+	private void fillTrends(MacdTrigger triggers, MacdTrend trends) {
+
+		List<String> simplifiedTrends = new ArrayList<String>();
+
+		int firstValueIndex = 0;
+
+		for (int i=0; i< trends.getTrend().size(); i++) {
+			
+			if ( firstValueIndex==0) {
+				if (trends.getTrend().get(i).equals("none"))
+					simplifiedTrends.add("n/a");
+				else {
+					simplifiedTrends.add(trends.getTrend().get(i));
+					firstValueIndex = i;
+				}
+			} else {
+
+				if (!trends.getTrend().get(i).equals("none"))
+					simplifiedTrends.add(trends.getTrend().get(i));
+				else
+					simplifiedTrends.add(simplifiedTrends.get(i-1));
+			}
+			
+		}
+
+		triggers.setTrend(Arrays.asList(new String[triggers.getMacd().size()]));		
+
+		for (int j = 0; j < triggers.getMacd().size(); j++) {
+
+			Long triggerTime = triggers.getData().getData().get(j).getTime();
+
+			for (int i = 0; i < trends.getMacd().size(); i++) {
+
+				String trendValue = simplifiedTrends.get(i);
+				Long trendTime = trends.getData().getData().get(i).getTime();
+
+				if (triggerTime >= trendTime) {
+					if (!trendValue.equals("none")  ) {
+						triggers.getTrend().set(j, trendValue);
+					}
+
+				} else 
+					break;
+
+			}
+
+		}
+
+
+	}
+
+	private MacdResult computeMacd(String currency, String quoteCurrency, int aggregate, String exchange, MacdSettings macdSettings) {
+
+		CryptoPairDto data = historyDataWao.getHistoHour(currency, quoteCurrency, aggregate, exchange);
+
 		//exponential moving average computation
 		MobileAverageData slowEma = initMobileAverageData(data, macdSettings.getSlowLength());
 		MobileAverageData fastEma = initMobileAverageData(data, macdSettings.getFastLength());
@@ -50,7 +177,7 @@ public class MacdBoImpl implements MacdBo {
 		List<Double> macd = new ArrayList<Double>();
 
 		for( int i=0; i < slowEma.getTimes().size(); i++  ) {
-				
+
 			macd.add(fastEma.getEma().get(i)-slowEma.getEma().get(i));
 
 		}
@@ -74,35 +201,14 @@ public class MacdBoImpl implements MacdBo {
 
 		}
 
-		List<String> order = new ArrayList<String>();
+		MacdResult result = new MacdResult(data, macd, amacd, delta);
 
-		for( int i=0; i < macd.size(); i++  ) {
+		return result;
 
-			if (delta.get(i) > 0 && delta.get(i-1) < 0)
-				order.add("long");
-			else if (delta.get(i) < 0 && delta.get(i-1) > 0)
-					order.add("short");
-				else
-					order.add("none");
-
-		}
-
-		display(data, macd, amacd, delta, order);
-		
-		return null;
 	}
 
+	private List<Double> getInitValues(CryptoPairDto data, Integer length, Integer startIndex) {
 
-	/******************
-	 * 
-	 * 
-	 *  PRIVATE METHODS
-	 * 
-	 * 
-	 ******************/
-
-	private List<Double> getInitValues(CryptoPair data, Integer length, Integer startIndex) {
-		
 		List<Double> values = new ArrayList<Double>();		
 		for ( Ohclv d : data.getData().subList(startIndex, startIndex+length)) {
 
@@ -113,22 +219,22 @@ public class MacdBoImpl implements MacdBo {
 		return values;
 	}
 
-	private MobileAverageData initMobileAverageData(CryptoPair data, Integer length) {
+	private MobileAverageData initMobileAverageData(CryptoPairDto data, Integer length) {
 
 		MobileAverageData ma = new MobileAverageData();
 
 		int index = 0;
 
 		for (Ohclv d : data.getData()) {
-					
+
 			ma.getTimes().add(d.getTime());
 			ma.getClose().add(d.getClose());
-			
+
 			if (index < length) 
 				ma.getSma().add(0d);
 			else
 				ma.getSma().add(mathFunctions.mean(getInitValues(data, length, index-length)));
-			
+
 			if (index==0)
 				ma.getEma().add(d.getClose());	
 			else
@@ -140,14 +246,27 @@ public class MacdBoImpl implements MacdBo {
 		return ma;
 	}
 
-	private void display(CryptoPair data, List<Double> macd,List<Double> amacd,List<Double> delta,List<String> order) {
-		
-		for (int i=0; i< macd.size(); i++) {
-			
-			System.out.println(data.getData().get(i).getTime() +","+ data.getData().get(i).getClose()+","+macd.get(i)+","+amacd.get(i)+","+delta.get(i)+","+order.get(i));
-			
+	private void displayTrend(MacdTrend matrix) {
+
+		for (int i=0; i< matrix.getMacd().size(); i++) {
+
+			System.out.println(matrix.getData().getData().get(i).getTime() +","+ matrix.getData().getData().get(i).getClose()+","+matrix.getMacd().get(i)+","+matrix.getAmacd().get(i)+","+matrix.getDelta().get(i)+","+matrix.getTrend().get(i));
+
 		}
-		
+
 	}
-	
+
+	private void displayTrigger(MacdTrigger matrix) {
+
+		for (int i=0; i< matrix.getMacd().size(); i++) {
+			try {
+				System.out.println(matrix.getData().getData().get(i).getTime() +","+ matrix.getData().getData().get(i).getClose()+","+matrix.getMacd().get(i)+","+matrix.getAmacd().get(i)+","+matrix.getDelta().get(i)+","+matrix.getTrend().get(i)+","+matrix.getTrigger().get(i));
+			
+			} catch (Exception e) {
+				System.out.println("Erreur: "+i+" - "+e.getMessage());
+			}
+		}
+
+	}
+
 }

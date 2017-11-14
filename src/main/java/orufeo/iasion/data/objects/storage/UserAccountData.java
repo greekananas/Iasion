@@ -1,4 +1,4 @@
-package orufeo.iasion.data.objects;
+package orufeo.iasion.data.objects.storage;
 
 import java.util.List;
 
@@ -7,7 +7,7 @@ import lombok.Setter;
 
 @Getter 
 @Setter
-public class User {
+public class UserAccountData {
 
 		private String login;
 		private String password;
@@ -15,6 +15,6 @@ public class User {
 		private String firstname;
 		private String picUrl;
 		private String token;
-		private List<Wallet> wallets;
+		private List<WalletData> wallets;
 		
 }

@@ -1,4 +1,4 @@
-package orufeo.iasion.data.objects;
+package orufeo.iasion.data.objects.mapping;
 
 import lombok.Getter;
 import lombok.Setter;

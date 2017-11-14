@@ -2,8 +2,8 @@ package orufeo.iasion.component;
 
 import orufeo.iasion.bo.MacdBo;
 import orufeo.iasion.bo.MacdBoImpl;
-import orufeo.iasion.data.objects.MacdSettings;
-import orufeo.iasion.data.objects.WalletSettings;
+import orufeo.iasion.data.objects.analysis.MacdSettings;
+import orufeo.iasion.data.objects.analysis.MacdTrend;
 
 public class App {
 
@@ -11,19 +11,20 @@ public class App {
 		
 		MacdBo macdBo = new MacdBoImpl();
 		
+		Integer aggregateBig = 12;
+		Integer aggregateSmall = 4;
+		
 		MacdSettings macdSettings = new MacdSettings();
 		
 		macdSettings.setFastLength(2);
 		macdSettings.setSlowLength(6);
 		macdSettings.setMACDLength(9);
 		
-		WalletSettings walletSettings = new WalletSettings();
-		walletSettings.setCommission(0d);
-		walletSettings.setEquity(10d);
-		
 		macdBo.init();
 		
-		macdBo.analyseCryptoPair("BTC", "USD", 12, "Kraken", macdSettings, walletSettings);
+		MacdTrend matrixTrend = macdBo.analyzeTrend("BTC", "USD", aggregateBig, "Kraken", macdSettings);
+		macdBo.analyzeTrigger("BTC", "USD", aggregateSmall, "Kraken", macdSettings, matrixTrend);
+		
 		
 	}
 	
