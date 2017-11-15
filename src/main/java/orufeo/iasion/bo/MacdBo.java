@@ -2,6 +2,7 @@ package orufeo.iasion.bo;
 
 import orufeo.iasion.data.objects.analysis.MacdSettings;
 import orufeo.iasion.data.objects.analysis.MacdTrend;
+import orufeo.iasion.data.objects.analysis.MacdTrigger;
 
 public interface MacdBo {
 
@@ -9,7 +10,7 @@ public interface MacdBo {
 	
 	MacdTrend analyzeTrend(String currency, String quoteCurrency, int aggregate, String exchange, MacdSettings macdSettings);
 	
-	MacdTrend analyzeTrigger(String currency, String quoteCurrency, int aggregate, String exchange, MacdSettings macdSettings, MacdTrend trends);
+	MacdTrigger analyzeTrigger(String currency, String quoteCurrency, int aggregate, String exchange, MacdSettings macdSettings, MacdTrend trends);
 	
 	void init();
 }

@@ -4,6 +4,7 @@ import orufeo.iasion.bo.MacdBo;
 import orufeo.iasion.bo.MacdBoImpl;
 import orufeo.iasion.data.objects.analysis.MacdSettings;
 import orufeo.iasion.data.objects.analysis.MacdTrend;
+import orufeo.iasion.data.objects.analysis.MacdTrigger;
 
 public class App {
 
@@ -23,7 +24,7 @@ public class App {
 		macdBo.init();
 		
 		MacdTrend matrixTrend = macdBo.analyzeTrend("BTC", "USD", aggregateBig, "Kraken", macdSettings);
-		macdBo.analyzeTrigger("BTC", "USD", aggregateSmall, "Kraken", macdSettings, matrixTrend);
+		MacdTrigger matrixTrigger = macdBo.analyzeTrigger("BTC", "USD", aggregateSmall, "Kraken", macdSettings, matrixTrend);
 		
 		
 	}

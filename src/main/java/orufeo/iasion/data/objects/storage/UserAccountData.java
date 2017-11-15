@@ -15,6 +15,7 @@ public class UserAccountData {
 		private String firstname;
 		private String picUrl;
 		private String token;
+		private String role;
 		private List<WalletData> wallets;
 		
 }

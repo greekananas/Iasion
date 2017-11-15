@@ -10,6 +10,10 @@ public interface UserAccountDao {
 	
 	UserAccount get(String guid);
 	
+	UserAccount getByLogin(String login);
+	
+	UserAccount getByToken(String token);
+	
 	List<UserAccount> get();
 	
 	void update(UserAccount userAccount);

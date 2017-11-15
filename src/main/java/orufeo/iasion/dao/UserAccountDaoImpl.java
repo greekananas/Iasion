@@ -74,6 +74,32 @@ public class UserAccountDaoImpl extends AbstractDao implements UserAccountDao {
 
 		return null;
 	}
+	
+	@Override
+	public UserAccount getByLogin(String login) {
+		String sql = "SELECT * FROM useraccount WHERE data->>'login' = ?";
+
+		try {
+			return jdbcTemplate.queryForObject(sql, new UserAccountMapper(), login);
+		} catch (Exception e) {
+			log.error("get : guid not found in base");
+		}
+
+		return null;
+	}
+
+	@Override
+	public UserAccount getByToken(String token) {
+		String sql = "SELECT * FROM useraccount WHERE data->>'token' = ?";
+
+		try {
+			return jdbcTemplate.queryForObject(sql, new UserAccountMapper(), token);
+		} catch (Exception e) {
+			log.error("get : guid not found in base");
+		}
+
+		return null;
+	}
 
 	@Override
 	public List<UserAccount> get() {

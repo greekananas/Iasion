@@ -32,8 +32,6 @@ public class MacdBoImpl implements MacdBo {
 
 	}
 
-
-
 	@Override
 	public MacdTrend analyzeTrend(String currency, String quoteCurrency, int aggregate, String exchange, MacdSettings macdSettings) {
 
@@ -61,7 +59,7 @@ public class MacdBoImpl implements MacdBo {
 	}
 
 	@Override
-	public MacdTrend analyzeTrigger(String currency, String quoteCurrency, int aggregate, String exchange, MacdSettings macdSettings, MacdTrend trends) {
+	public MacdTrigger analyzeTrigger(String currency, String quoteCurrency, int aggregate, String exchange, MacdSettings macdSettings, MacdTrend trends) {
 
 		MacdResult result = computeMacd(currency, quoteCurrency, aggregate, exchange, macdSettings); 
 
@@ -100,7 +98,7 @@ public class MacdBoImpl implements MacdBo {
 		displayTrigger(triggers);
 
 
-		return null;
+		return triggers;
 	}
 
 
