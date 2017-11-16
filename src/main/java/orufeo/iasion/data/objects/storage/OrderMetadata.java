@@ -7,4 +7,9 @@ import lombok.Setter;
 @Setter
 public class OrderMetadata extends Metadata {
 
+	public OrderMetadata(UserAccount user ) {
+
+		super(user);
+	}
+	
 }

@@ -7,7 +7,10 @@ import org.mule.api.annotations.param.Payload;
 
 import lombok.Setter;
 import orufeo.iasion.bo.UserAccountBo;
+import orufeo.iasion.data.objects.storage.OrderMetadata;
 import orufeo.iasion.data.objects.storage.UserAccount;
+import orufeo.iasion.data.objects.storage.UserAccountMetadata;
+import orufeo.iasion.utils.CookiesValueTL;
 
 public class UserSRV {
 
@@ -29,6 +32,12 @@ public class UserSRV {
 
 	public UserAccount create(@Payload UserAccount userAccount) {
 
+		Map<String, String> cookies = CookiesValueTL.get();
+		UserAccount user = userAccountBo.getByToken(cookies.get("token"));
+		UserAccountMetadata metadata = new UserAccountMetadata(user);
+
+		userAccount.setMetadata(metadata);
+		
 		return userAccountBo.create(userAccount);
 
 	}
@@ -46,9 +55,5 @@ public class UserSRV {
 		userAccountBo.delete(guid);
 
 	}
-
-
-
-
 
 }

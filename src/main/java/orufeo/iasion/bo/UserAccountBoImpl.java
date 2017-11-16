@@ -109,4 +109,10 @@ public class UserAccountBoImpl implements UserAccountBo {
 		
 	}
 
+	@Override
+	public UserAccount getByToken(String token) {
+		
+		return userAccountDao.getByToken(token);
+	}
+
 }

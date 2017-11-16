@@ -7,4 +7,9 @@ import lombok.Setter;
 @Setter
 public class ExchangeMetadata extends Metadata {
 
+	public ExchangeMetadata(UserAccount user ) {
+		
+		super(user);
+	}
+	
 }

@@ -7,4 +7,10 @@ import lombok.Setter;
 @Setter
 public class UserAccountMetadata extends Metadata {
 
+	public UserAccountMetadata(UserAccount user ) {
+
+		super(user);
+	}
+
+
 }

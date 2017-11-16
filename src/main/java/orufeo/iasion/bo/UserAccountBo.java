@@ -15,6 +15,8 @@ public interface UserAccountBo {
 	
 	UserAccount get(String guid);
 	
+	UserAccount getByToken(String token);
+	
 	List<UserAccount> get();
 	
 	void update(UserAccount userAccount);
