@@ -97,7 +97,6 @@ public class MacdBoImpl implements MacdBo {
 
 		displayTrigger(triggers);
 
-
 		return triggers;
 	}
 
