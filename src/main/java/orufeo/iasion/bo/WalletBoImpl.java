@@ -38,9 +38,23 @@ public class WalletBoImpl implements WalletBo {
 		
 		return walletDao.get();
 	}
+	
+
+	@Override
+	public List<Wallet> getForUser(String userGuid) {
+		
+		return walletDao.getForUser(userGuid);
+	}
 
 	@Override
 	public void update(Wallet wallet) {
+		
+		update(wallet,null);
+		
+	}
+	
+	@Override
+	public void update(Wallet wallet, String transactionId) {
 		
 		//********** History log
 		Wallet previous = walletDao.get(wallet.getMetadata().getGuid());
@@ -60,6 +74,8 @@ public class WalletBoImpl implements WalletBo {
 		
 		WalletHistoryData data = new WalletHistoryData();
 		data.setTime(new Date().getTime());
+		if (null!=transactionId)
+			data.setTransactionId(transactionId);
 		data.setWalletData(previous.getData());
 		data.setWalletGuid(previous.getMetadata().getGuid());
 		
@@ -81,5 +97,6 @@ public class WalletBoImpl implements WalletBo {
 		walletDao.delete(guid);
 		
 	}
+
 
 }

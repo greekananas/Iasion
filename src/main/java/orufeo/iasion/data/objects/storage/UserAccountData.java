@@ -1,6 +1,6 @@
 package orufeo.iasion.data.objects.storage;
 
-import java.util.List;
+import java.util.HashMap;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -16,6 +16,6 @@ public class UserAccountData {
 		private String picUrl;
 		private String token;
 		private String role;
-		private List<WalletData> wallets;
+		private HashMap<String,ExchangeKeys> exchKeys; 
 		
 }

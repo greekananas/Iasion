@@ -9,6 +9,7 @@ public class WalletHistoryData {
 
 	private Long time;
 	private String walletGuid;
+	private String transactionId;
 	private WalletData walletData;
 	
 }

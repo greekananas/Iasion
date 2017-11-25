@@ -14,6 +14,9 @@ public interface WalletBo {
 	
 	void update(Wallet wallet);
 	
+	void update(Wallet wallet, String transactionId);
+	
 	void delete(String guid);
 	
+	List<Wallet> getForUser(String userGuid);
 }

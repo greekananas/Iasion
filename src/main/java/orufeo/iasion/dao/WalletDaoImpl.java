@@ -120,4 +120,17 @@ public class WalletDaoImpl extends AbstractDao implements WalletDao {
 
 	}
 
+	@Override
+	public List<Wallet> getForUser(String userGuid) {
+		String sql = "SELECT * FROM wallet WHERE data->>'userGuid' = ?";
+
+		try {
+			return jdbcTemplate.query(sql, new WalletMapper(), userGuid);
+		} catch (Exception e) {
+			log.error("getForUser : guid not found in base");
+		}
+
+		return null;
+	}
+
 }

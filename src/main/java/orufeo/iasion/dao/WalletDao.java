@@ -16,5 +16,7 @@ public interface WalletDao {
 	void update(Wallet wallet);
 	
 	void delete(String guid);
+	
+	List<Wallet> getForUser(String userGuid);
 
 }
