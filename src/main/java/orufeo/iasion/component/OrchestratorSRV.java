@@ -39,7 +39,7 @@ public class OrchestratorSRV {
 		Integer macdLength = Integer.valueOf(args.get("macdLength"));  //9;
 		String currency = args.get("currency");  //"BTC";
 		String quoteCurrency = args.get("quoteCurrency");  //"USD";
-		String exchange = args.get("exchange");  //"Kraken";
+		String exchange = args.get("exchange");  //"bitfinex";
 
 		if (ORCHESTRATOR_TOKEN.equals(token)) {
 
