@@ -2,24 +2,32 @@ package orufeo.iasion.wao;
 
 import java.util.List;
 
+import orufeo.iasion.data.dto.BitFinexBalanceStatus;
 import orufeo.iasion.data.dto.BitFinexOrderStatus;
 import orufeo.iasion.data.dto.BitFinexPosition;
+import orufeo.iasion.data.dto.BitFinexTransferStatus;
+import orufeo.iasion.exception.ActivePositionsException;
+import orufeo.iasion.exception.BalancesException;
+import orufeo.iasion.exception.BuyException;
+import orufeo.iasion.exception.CancelOrderException;
+import orufeo.iasion.exception.ClosePositionException;
+import orufeo.iasion.exception.OrderStatusException;
+import orufeo.iasion.exception.TransferException;
 
 public interface BitfinexWao {
-/*
-	Exchange createExchange(String apiKey, String secretKey);
 	
-	AccountService getAccountService(Exchange exchange);
+	List<BitFinexPosition> getActivePositions(String apiKey, String secretKey) throws ActivePositionsException;
 	
-	BitfinexMarginInfosResponse[] marginInfo(AccountService accountService)  throws IOException;
-	 
-	List<FundingRecord> fundingHistory(AccountService accountService)  throws IOException;
-*/
+	BitFinexOrderStatus closePosition(BitFinexPosition position, String apiKey, String secretKey) throws ClosePositionException;
 	
-	List<BitFinexPosition> getActivePositions(String apiKey, String secretKey) throws Exception;
+	BitFinexOrderStatus orderStatus(Long orderId, String apiKey, String secretKey) throws OrderStatusException;
 	
-	BitFinexOrderStatus closePosition(BitFinexPosition position, String apiKey, String secretKey) throws Exception;
+	BitFinexOrderStatus cancelOrder(Long orderId, String apiKey, String secretKey) throws CancelOrderException;
 	
-	BitFinexOrderStatus orderStatus(Long orderId, String apiKey, String secretKey) throws Exception;
+	List<BitFinexTransferStatus> transfer(String from, String to, String currencyLabel, Double currencyAmount, String apiKey, String secretKey) throws TransferException;
+	
+	List<BitFinexBalanceStatus> getBalances(String apiKey, String secretKey) throws BalancesException;
+	
+	BitFinexOrderStatus buy(String symbol, String amount, String price, String type, String apiKey, String secretKey) throws BuyException;
 	
 }

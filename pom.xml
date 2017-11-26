@@ -265,10 +265,17 @@
 			<artifactId>xchange-core</artifactId>
 			<version>4.3.0</version>
 		</dependency>
+		<!--
 		<dependency>
 			<groupId>org.knowm.xchange</groupId>
 			<artifactId>xchange-bitfinex</artifactId>
 			<version>4.3.0</version>
+		</dependency>
+		-->
+		<dependency>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpclient</artifactId>
+			<version>4.5.3</version>
 		</dependency>
 	</dependencies>
 </project>

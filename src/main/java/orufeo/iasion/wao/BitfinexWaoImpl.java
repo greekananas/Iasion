@@ -20,13 +20,24 @@ import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
 import org.apache.log4j.Logger;
+import org.codehaus.jackson.JsonParseException;
+import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import lombok.Setter;
+import orufeo.iasion.data.dto.BitFinexBalanceStatus;
 import orufeo.iasion.data.dto.BitFinexOrderStatus;
 import orufeo.iasion.data.dto.BitFinexPosition;
+import orufeo.iasion.data.dto.BitFinexTransferStatus;
+import orufeo.iasion.exception.ActivePositionsException;
+import orufeo.iasion.exception.BalancesException;
+import orufeo.iasion.exception.BuyException;
+import orufeo.iasion.exception.CancelOrderException;
+import orufeo.iasion.exception.ClosePositionException;
+import orufeo.iasion.exception.OrderStatusException;
+import orufeo.iasion.exception.TransferException;
 
 
 public class BitfinexWaoImpl implements BitfinexWao {
@@ -39,7 +50,7 @@ public class BitfinexWaoImpl implements BitfinexWao {
 	private static Logger log = Logger.getLogger(BitfinexWaoImpl.class);
 
 	@Override
-	public List<BitFinexPosition> getActivePositions(String apiKey, String secretKey) throws Exception {
+	public List<BitFinexPosition> getActivePositions(String apiKey, String secretKey) throws ActivePositionsException {
 
 		long nonce = System.currentTimeMillis();
 		String path = "/v1/positions";
@@ -51,15 +62,23 @@ public class BitfinexWaoImpl implements BitfinexWao {
 
 		String payload = jo.toString();
 
-		//API CALL
-		String response = httpCallBitFinex(PROTOCOL, DOMAIN, path, "POST", apiKey, secretKey, payload);
+		try {
+			//API CALL
+			String response = httpCallBitFinex(PROTOCOL, DOMAIN, path, "POST", apiKey, secretKey, payload);
 
-		return mapper.readValue(response, mapper.getTypeFactory().constructCollectionType(List.class, BitFinexPosition.class));
+			return mapper.readValue(response, mapper.getTypeFactory().constructCollectionType(List.class, BitFinexPosition.class));
+		} catch (JsonParseException e) {
+			throw new ActivePositionsException("JsonParseException: "+e.getMessage());
+		} catch (JsonMappingException e) {
+			throw new ActivePositionsException("JsonMappingException: "+e.getMessage());
+		} catch (IOException e) {
+			throw new ActivePositionsException("IOException: "+e.getMessage());
+		}
 
 	}
 
 	@Override
-	public BitFinexOrderStatus closePosition(BitFinexPosition position, String apiKey, String secretKey) throws Exception {
+	public BitFinexOrderStatus closePosition(BitFinexPosition position, String apiKey, String secretKey) throws ClosePositionException {
 
 		long nonce = System.currentTimeMillis();
 		String path = "/v1/order/new";
@@ -77,13 +96,131 @@ public class BitfinexWaoImpl implements BitfinexWao {
 
 		String payload = jo.toString();
 
-		String response = httpCallBitFinex(PROTOCOL, DOMAIN, "/v1/order/new", "POST", apiKey, secretKey, payload);
+		try {
+			String response = httpCallBitFinex(PROTOCOL, DOMAIN, "/v1/order/new", "POST", apiKey, secretKey, payload);
 
-		return mapper.readValue(response, BitFinexOrderStatus.class);
+			return mapper.readValue(response, BitFinexOrderStatus.class);
+		} catch (JsonParseException e) {
+			throw new ClosePositionException("JsonParseException: "+e.getMessage());
+		} catch (JsonMappingException e) {
+			throw new ClosePositionException("JsonMappingException: "+e.getMessage());
+		} catch (IOException e) {
+			throw new ClosePositionException("IOException: "+e.getMessage());
+		}
 	}
 
 	@Override
-	public BitFinexOrderStatus orderStatus(Long orderId, String apiKey, String secretKey) throws Exception {
+	public BitFinexOrderStatus orderStatus(Long orderId, String apiKey, String secretKey) throws OrderStatusException {
+
+		long nonce = System.currentTimeMillis();
+		String path = "/v1/order/status";
+
+		//PAYLOAD CONSTRUCTION
+		JSONObject jo = new JSONObject();
+		jo.put("request", path);
+		jo.put("nonce", Long.toString(nonce));
+		jo.put("order_id", Long.toString(orderId));
+
+		String payload = jo.toString();
+
+		try {
+			String response = httpCallBitFinex(PROTOCOL, DOMAIN, path, "POST", apiKey, secretKey, payload);
+
+			return mapper.readValue(response, BitFinexOrderStatus.class);
+		} catch (JsonParseException e) {
+			throw new OrderStatusException("JsonParseException: "+e.getMessage());
+		} catch (JsonMappingException e) {
+			throw new OrderStatusException("JsonMappingException: "+e.getMessage());
+		} catch (IOException e) {
+			throw new OrderStatusException("IOException: "+e.getMessage());
+		}
+	}
+
+	@Override
+	public BitFinexOrderStatus cancelOrder(Long orderId, String apiKey, String secretKey) throws CancelOrderException {
+
+		long nonce = System.currentTimeMillis();
+		String path = "/v1/order/cancel";
+
+		//PAYLOAD CONSTRUCTION
+		JSONObject jo = new JSONObject();
+		jo.put("request", path);
+		jo.put("nonce", Long.toString(nonce));
+		jo.put("order_id", Long.toString(orderId));
+		jo.put("id", Long.toString(orderId));
+
+		String payload = jo.toString();
+		try {
+			String response = httpCallBitFinex(PROTOCOL, DOMAIN, path, "POST", apiKey, secretKey, payload);
+
+			return mapper.readValue(response, BitFinexOrderStatus.class);
+		} catch (JsonParseException e) {
+			throw new CancelOrderException("JsonParseException: "+e.getMessage());
+		} catch (JsonMappingException e) {
+			throw new CancelOrderException("JsonMappingException: "+e.getMessage());
+		} catch (IOException e) {
+			throw new CancelOrderException("IOException: "+e.getMessage());
+		}
+	}
+
+	@Override
+	public List<BitFinexTransferStatus> transfer(String from, String to, String currencyLabel, Double currencyAmount, String apiKey, String secretKey) throws TransferException {
+
+		long nonce = System.currentTimeMillis();
+		String path = "/v1/transfer";
+
+		//PAYLOAD CONSTRUCTION
+		JSONObject jo = new JSONObject();
+		jo.put("request", path);
+		jo.put("nonce", Long.toString(nonce));
+		jo.put("amount", Double.toString(currencyAmount));
+		jo.put("currency", currencyLabel.toUpperCase());
+		jo.put("walletfrom", from);
+		jo.put("walletto", to);
+
+		String payload = jo.toString();
+		try {
+			String response = httpCallBitFinex(PROTOCOL, DOMAIN, path, "POST", apiKey, secretKey, payload);
+
+			return mapper.readValue(response, mapper.getTypeFactory().constructCollectionType(List.class, BitFinexTransferStatus.class));
+		} catch (JsonParseException e) {
+			throw new TransferException("JsonParseException: "+e.getMessage());
+		} catch (JsonMappingException e) {
+			throw new TransferException("JsonMappingException: "+e.getMessage());
+		} catch (IOException e) {
+			throw new TransferException("IOException: "+e.getMessage());
+		}
+
+	}
+
+	@Override
+	public List<BitFinexBalanceStatus> getBalances(String apiKey, String secretKey) throws BalancesException {
+
+		long nonce = System.currentTimeMillis();
+		String path = "/v1/balances";
+
+		//PAYLOAD CONSTRUCTION
+		JSONObject jo = new JSONObject();
+		jo.put("request", path);
+		jo.put("nonce", Long.toString(nonce));
+
+		String payload = jo.toString();
+		try {
+			String response = httpCallBitFinex(PROTOCOL, DOMAIN, path, "POST", apiKey, secretKey, payload);
+
+			return mapper.readValue(response, mapper.getTypeFactory().constructCollectionType(List.class, BalancesException.class));
+		} catch (JsonParseException e) {
+			throw new BalancesException("JsonParseException: "+e.getMessage());
+		} catch (JsonMappingException e) {
+			throw new BalancesException("JsonMappingException: "+e.getMessage());
+		} catch (IOException e) {
+			throw new BalancesException("IOException: "+e.getMessage());
+		}
+
+	}
+
+	@Override
+	public BitFinexOrderStatus buy(String symbol, String amount, String price, String type, String apiKey, String secretKey) throws BuyException {
 
 		long nonce = System.currentTimeMillis();
 		String path = "/v1/order/new";
@@ -92,14 +229,28 @@ public class BitfinexWaoImpl implements BitfinexWao {
 		JSONObject jo = new JSONObject();
 		jo.put("request", path);
 		jo.put("nonce", Long.toString(nonce));
-		jo.put("order_id", Long.toString(orderId));
-		
-		String payload = jo.toString();
-		
-		String response = httpCallBitFinex(PROTOCOL, DOMAIN, "/v1/order/status", "POST", apiKey, secretKey, payload);
+		jo.put("symbol", symbol.toUpperCase());
+		jo.put("amount", amount); 
+		jo.put("price",  price); 
+		jo.put("exchange", "bitfinex");
+		jo.put("side", "buy");
+		jo.put("type",  type); 
 
-		return mapper.readValue(response, BitFinexOrderStatus.class);
+		String payload = jo.toString();
+		try {
+			String response = httpCallBitFinex(PROTOCOL, DOMAIN, path, "POST", apiKey, secretKey, payload);
+
+			return mapper.readValue(response, BitFinexOrderStatus.class);
+		} catch (JsonParseException e) {
+			throw new BuyException("JsonParseException: "+e.getMessage());
+		} catch (JsonMappingException e) {
+			throw new BuyException("JsonMappingException: "+e.getMessage());
+		} catch (IOException e) {
+			throw new BuyException("IOException: "+e.getMessage());
+		}
+
 	}
+
 
 
 	/********************
@@ -117,9 +268,8 @@ public class BitfinexWaoImpl implements BitfinexWao {
 
 		//String protocol = "https://";
 		//String domain ="api.bitfinex.com";
-
 		//String path = "/v1/balances";
-		// String method = "GET";
+		//String method = "GET";
 		//String method = "POST";
 
 		try {
@@ -149,6 +299,15 @@ public class BitfinexWaoImpl implements BitfinexWao {
 			conn.addRequestProperty("X-BFX-APIKEY", apiKey);
 			conn.addRequestProperty("X-BFX-PAYLOAD", payload_base64);
 			conn.addRequestProperty("X-BFX-SIGNATURE", payload_sha384hmac);
+
+			if (log.isDebugEnabled()) {
+				log.debug("URL: "+ protocol+domain+path);
+				log.debug("X-BFX-APIKEY: "+ apiKey);
+				log.debug("X-BFX-PAYLOAD: "+payload_base64);
+				log.debug("X-BFX-SIGNATURE: "+ payload_sha384hmac);
+				log.debug("payload: "+payload);
+
+			}
 
 			// read the response
 			InputStream in = new BufferedInputStream(conn.getInputStream());
@@ -234,52 +393,4 @@ public class BitfinexWaoImpl implements BitfinexWao {
 		return digest;
 	}
 
-
-	/*
-	@Override
-	public Exchange createExchange(String apiKey, String secretKey) {
-
-		    // Use the factory to get BFX exchange API using default settings
-		    Exchange bfx = ExchangeFactory.INSTANCE.createExchange(BitfinexExchange.class.getName());
-
-		    ExchangeSpecification bfxSpec = bfx.getDefaultExchangeSpecification();
-
-		    bfxSpec.setApiKey(apiKey);
-		    bfxSpec.setSecretKey(secretKey);
-
-		    bfx.applySpecification(bfxSpec);
-
-		    return bfx;
-
-	}
-
-	@Override
-	public AccountService getAccountService(Exchange exchange) {
-
-		return exchange.getAccountService();
-	}
-
-	@Override
-	public BitfinexMarginInfosResponse[] marginInfo(AccountService accountService)  throws IOException {
-
-		// Get the margin information
-	    BitfinexAccountServiceRaw accountServiceRaw = (BitfinexAccountServiceRaw) accountService;
-	    return accountServiceRaw.getBitfinexMarginInfos();
-	}
-
-	@Override
-	public List<FundingRecord> fundingHistory(AccountService accountService)  throws IOException {
-		 // Get the funds information
-	    TradeHistoryParams params = accountService.createFundingHistoryParams();
-	    if (params instanceof TradeHistoryParamsTimeSpan) {
-	      final TradeHistoryParamsTimeSpan timeSpanParam = (TradeHistoryParamsTimeSpan) params;
-	      timeSpanParam.setStartTime(new Date(System.currentTimeMillis() - (1 * 12 * 30 * 24 * 60 * 60 * 1000L)));
-	    }
-	    if (params instanceof TradeHistoryParamCurrency) {
-	      ((TradeHistoryParamCurrency) params).setCurrency(Currency.BTC);
-	    }
-
-	    return accountService.getFundingHistory(params);
-	}
-	 */
 }
