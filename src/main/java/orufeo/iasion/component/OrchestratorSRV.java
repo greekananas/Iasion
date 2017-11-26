@@ -84,23 +84,19 @@ public class OrchestratorSRV {
 				for (Wallet wallet : matchs) {
 
 					if ("long".equals(signal)) {
-
 						longProcessBean.process(wallet);
-
 					} else if ("short".equals(signal)) {
-
+						shortProcessBean.process(wallet);
 					} else if ("prise long".equals(signal)) {
-
+						priseLongProcessBean.process(wallet);
 					} else if ("prise short".equals(signal)) {
-
+						priseShortProcessBean.process(wallet);
 					} else if ("cloture long".equals(signal)) {
-
+						clotureLongProcessBean.process(wallet);
 					} else if ("cloture short".equals(signal)) {
-
+						clotureShortProcessBean.process(wallet);
 					} 
-
 				}
-
 			}
 
 			return new HttpStatus("OK", "200", "");
