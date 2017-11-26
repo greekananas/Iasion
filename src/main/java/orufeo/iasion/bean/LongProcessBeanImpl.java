@@ -124,13 +124,17 @@ public class LongProcessBeanImpl implements LongProcessBean {
 						}
 					}
 					
+					//comment on sait quelle valeur de BTC acheter ? ou qté ? bref, faut-il faire une conversion temps reel ? ou peut-on passer un ordre en valeur ? TODO
 					BitFinexOrderStatus buyOrder = bitfinexWao.buy(iasionSymbol, "amount????", "price?????", "exchange what????", apiKey, secretKey);
 					
 					Double executedBuy = loopCheckStatus(buyOrder.getRemaining_amount(), buyOrder.getExecuted_amount(), buyOrder.getOrder_id(), apiKey, secretKey, 0);
 					
-					//TODO METTRE A JOUR L'EQUITY DISPO
+					wallet.getData().setCurrencyValue(0d);
+					wallet.getData().setQuoteCurrencyValue(executedBuy);
+															
+					//we store the wallet in Iasion
+					walletBo.update(wallet, Long.toString(orderId));
 					
-
 					break;
 				}
 			}
