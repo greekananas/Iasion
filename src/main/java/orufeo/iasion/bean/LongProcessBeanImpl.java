@@ -39,7 +39,7 @@ public class LongProcessBeanImpl implements LongProcessBean {
 	private static Logger log = Logger.getLogger(LongProcessBeanImpl.class);
 
 	@Override
-	public void processLong(Wallet wallet) {
+	public void process(Wallet wallet) {
 
 		Exchange exchange = exchangeBo.get(wallet.getData().getExchangeGuid());
 

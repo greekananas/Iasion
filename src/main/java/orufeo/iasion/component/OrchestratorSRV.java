@@ -8,7 +8,12 @@ import org.apache.log4j.Logger;
 import org.mule.api.annotations.param.Payload;
 
 import lombok.Setter;
+import orufeo.iasion.bean.ClotureLongProcessBean;
+import orufeo.iasion.bean.ClotureShortProcessBean;
 import orufeo.iasion.bean.LongProcessBean;
+import orufeo.iasion.bean.PriseLongProcessBean;
+import orufeo.iasion.bean.PriseShortProcessBean;
+import orufeo.iasion.bean.ShortProcessBean;
 import orufeo.iasion.bo.MacdBo;
 import orufeo.iasion.bo.UserAccountBo;
 import orufeo.iasion.bo.WalletBo;
@@ -21,25 +26,30 @@ import orufeo.iasion.data.objects.storage.Wallet;
 
 public class OrchestratorSRV {
 
-	@Setter private String ORCHESTRATOR_TOKEN;     //Security
+	@Setter private String ORCHESTRATOR_TOKEN;     								//Security
 	@Setter private MacdBo macdBo;
 	@Setter private UserAccountBo userAccountBo;
 	@Setter private WalletBo walletBo;
 	@Setter private LongProcessBean longProcessBean;
+	@Setter private ShortProcessBean shortProcessBean;
+	@Setter private PriseLongProcessBean priseLongProcessBean;
+	@Setter private PriseShortProcessBean priseShortProcessBean;
+	@Setter private ClotureLongProcessBean clotureLongProcessBean;
+	@Setter private ClotureShortProcessBean clotureShortProcessBean;
 
 	private static Logger log = Logger.getLogger(OrchestratorSRV.class);
 
 	public HttpStatus macdAnalysis(@Payload Map<String, String> args) {
 
 		String token = args.get("token");		
-		Integer aggregateBig = Integer.valueOf(args.get("aggregateBig"));  //12;
-		Integer aggregateSmall = Integer.valueOf(args.get("aggregateSmall"));  //4;
-		Integer fastLength = Integer.valueOf(args.get("fastLength"));  //2;
-		Integer slowLength = Integer.valueOf(args.get("slowLength"));  //6;
-		Integer macdLength = Integer.valueOf(args.get("macdLength"));  //9;
-		String currency = args.get("currency");  //"BTC";
-		String quoteCurrency = args.get("quoteCurrency");  //"USD";
-		String exchange = args.get("exchange");  //"bitfinex";
+		Integer aggregateBig = Integer.valueOf(args.get("aggregateBig"));  		//12;
+		Integer aggregateSmall = Integer.valueOf(args.get("aggregateSmall"));  	//4;
+		Integer fastLength = Integer.valueOf(args.get("fastLength"));  			//2;
+		Integer slowLength = Integer.valueOf(args.get("slowLength"));  			//6;
+		Integer macdLength = Integer.valueOf(args.get("macdLength"));  			//9;
+		String currency = args.get("currency");  								//"BTC";
+		String quoteCurrency = args.get("quoteCurrency");  						//"USD";
+		String exchange = args.get("exchange");  								//"bitfinex";
 
 		if (ORCHESTRATOR_TOKEN.equals(token)) {
 
@@ -75,7 +85,7 @@ public class OrchestratorSRV {
 
 					if ("long".equals(signal)) {
 
-						longProcessBean.processLong(wallet);
+						longProcessBean.process(wallet);
 
 					} else if ("short".equals(signal)) {
 
