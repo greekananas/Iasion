@@ -74,6 +74,7 @@ public class OrchestratorSRV {
 
 				//iterate on his wallets to check if has one or more wallets, matching the currency and quotecurrency relevant to this analysis
 				List<Wallet> matchs = new ArrayList<Wallet>();
+				
 				for (Wallet wallet : wallets) {
 					if (wallet.getData().getQuoteCurrencyLabel().toUpperCase().equals(quoteCurrency.toUpperCase()) && wallet.getData().getCurrencyLabel().toUpperCase().equals(currency.toUpperCase())) {
 						matchs.add(wallet);

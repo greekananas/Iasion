@@ -10,10 +10,10 @@ public class BitFinexPosition {
 	private Long id;
 	private String symbol;
 	private String status;
-	private Double base;
-	private Double amount;
+	private String base;
+	private String amount;
 	private String timestamp;
-	private Double swap;
-	private Double pl;
+	private String swap;
+	private String pl;
 	
 }

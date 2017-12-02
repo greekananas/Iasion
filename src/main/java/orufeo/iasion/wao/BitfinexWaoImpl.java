@@ -25,11 +25,13 @@ import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.springframework.web.client.RestTemplate;
 
 import lombok.Setter;
 import orufeo.iasion.data.dto.BitFinexBalanceStatus;
 import orufeo.iasion.data.dto.BitFinexOrderStatus;
 import orufeo.iasion.data.dto.BitFinexPosition;
+import orufeo.iasion.data.dto.BitFinexTicker;
 import orufeo.iasion.data.dto.BitFinexTransferStatus;
 import orufeo.iasion.exception.ActivePositionsException;
 import orufeo.iasion.exception.BalancesException;
@@ -46,6 +48,7 @@ public class BitfinexWaoImpl implements BitfinexWao {
 	@Setter  private String DOMAIN;   // "api.bitfinex.com";
 	@Setter private String ALGORITHM_HMACSHA384; // "HmacSHA384"	
 	@Setter	private ObjectMapper mapper;
+	@Setter private RestTemplate restTemplate;
 
 	private static Logger log = Logger.getLogger(BitfinexWaoImpl.class);
 
@@ -88,11 +91,14 @@ public class BitfinexWaoImpl implements BitfinexWao {
 		jo.put("request", path);
 		jo.put("nonce", Long.toString(nonce));
 		jo.put("symbol", position.getSymbol().toUpperCase());
-		jo.put("amount", "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"); //TODO
-		jo.put("price",  "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"); //TODO
+		jo.put("amount", position.getAmount()); 
+		jo.put("price",  "0"); // Use random number for market orders as mentioned in the bitfinex documentation. We set it to 0
 		jo.put("exchange", "bitfinex");
-		jo.put("side", "sell");
-		jo.put("type",   "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"); //TODO
+		jo.put("side", "buy");
+		jo.put("type",   "market"); // means "Margin market"
+		jo.put("ocoorder",   "false"); 
+		jo.put("buy_price_oco",   "0"); 
+		jo.put("sell_price_oco",   "0"); 
 
 		String payload = jo.toString();
 
@@ -164,7 +170,7 @@ public class BitfinexWaoImpl implements BitfinexWao {
 	}
 
 	@Override
-	public List<BitFinexTransferStatus> transfer(String from, String to, String currencyLabel, Double currencyAmount, String apiKey, String secretKey) throws TransferException {
+	public List<BitFinexTransferStatus> transfer(String from, String to, String quoteCurrency, Double quoteCurrencyAmount, String apiKey, String secretKey) throws TransferException {
 
 		long nonce = System.currentTimeMillis();
 		String path = "/v1/transfer";
@@ -173,8 +179,8 @@ public class BitfinexWaoImpl implements BitfinexWao {
 		JSONObject jo = new JSONObject();
 		jo.put("request", path);
 		jo.put("nonce", Long.toString(nonce));
-		jo.put("amount", Double.toString(currencyAmount));
-		jo.put("currency", currencyLabel.toUpperCase());
+		jo.put("amount", Double.toString(quoteCurrencyAmount));
+		jo.put("currency", quoteCurrency.toUpperCase());
 		jo.put("walletfrom", from);
 		jo.put("walletto", to);
 
@@ -208,7 +214,7 @@ public class BitfinexWaoImpl implements BitfinexWao {
 		try {
 			String response = httpCallBitFinex(PROTOCOL, DOMAIN, path, "POST", apiKey, secretKey, payload);
 
-			return mapper.readValue(response, mapper.getTypeFactory().constructCollectionType(List.class, BalancesException.class));
+			return mapper.readValue(response, mapper.getTypeFactory().constructCollectionType(List.class, BitFinexBalanceStatus.class));
 		} catch (JsonParseException e) {
 			throw new BalancesException("JsonParseException: "+e.getMessage());
 		} catch (JsonMappingException e) {
@@ -251,6 +257,15 @@ public class BitfinexWaoImpl implements BitfinexWao {
 
 	}
 
+	@Override
+	public Double getTicker(String symbol) {
+		
+		String path = "/pubticker/"+symbol.toLowerCase();
+		
+		BitFinexTicker ticker = restTemplate.getForObject(PROTOCOL+DOMAIN+path, BitFinexTicker.class) ;
+		
+		return Double.valueOf(ticker.getAsk());
+	}
 
 
 	/********************
@@ -392,5 +407,7 @@ public class BitfinexWaoImpl implements BitfinexWao {
 		}
 		return digest;
 	}
+
+
 
 }

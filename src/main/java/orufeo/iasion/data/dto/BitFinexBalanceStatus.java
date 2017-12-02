@@ -9,7 +9,7 @@ public class BitFinexBalanceStatus {
 	
 	private String type;
 	private String currencyLabel;
-	private Double amount;
-	private Double available;
+	private String amount;
+	private String available;
 
 }

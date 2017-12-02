@@ -30,4 +30,6 @@ public interface BitfinexWao {
 	
 	BitFinexOrderStatus buy(String symbol, String amount, String price, String type, String apiKey, String secretKey) throws BuyException;
 	
+	Double getTicker(String symbol);
+	
 }
