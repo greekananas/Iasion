@@ -1,0 +1,773 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:spring="http://www.springframework.org/schema/beans" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:https="http://www.mulesoft.org/schema/mule/https" xmlns:file="http://www.mulesoft.org/schema/mule/file"
+	xmlns:vm="http://www.mulesoft.org/schema/mule/vm" xmlns:json="http://www.mulesoft.org/schema/mule/json"
+	xmlns:scripting="http://www.mulesoft.org/schema/mule/scripting"
+	xmlns:mule-xml="http://www.mulesoft.org/schema/mule/xml" xmlns:cxf="http://www.mulesoft.org/schema/mule/cxf"
+	xmlns:soap="http://www.mulesoft.org/schema/mule/soap" xmlns:management="http://www.mulesoft.org/schema/mule/management"
+	xmlns:smtp="http://www.mulesoft.org/schema/mule/smtp" xmlns:smtps="http://www.mulesoft.org/schema/mule/smtps"
+	xmlns:client="http://www.mulesoft.org/schema/mule/client" xmlns:test="http://www.mulesoft.org/schema/mule/test"
+	xmlns:jms="http://www.mulesoft.org/schema/mule/jms" xmlns:quartz="http://www.mulesoft.org/schema/mule/quartz"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="
+        http://www.mulesoft.org/schema/mule/core 	http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+        http://www.mulesoft.org/schema/mule/file 	http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd
+        http://www.mulesoft.org/schema/mule/vm 		http://www.mulesoft.org/schema/mule/vm/current/mule-vm.xsd
+        http://www.mulesoft.org/schema/mule/json 	http://www.mulesoft.org/schema/mule/json/current/mule-json.xsd
+        http://www.mulesoft.org/schema/mule/scripting http://www.mulesoft.org/schema/mule/scripting/current/mule-scripting.xsd
+        http://www.mulesoft.org/schema/mule/xml 	http://www.mulesoft.org/schema/mule/xml/current/mule-xml.xsd
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.mulesoft.org/schema/mule/cxf 	http://www.mulesoft.org/schema/mule/cxf/current/mule-cxf.xsd
+        http://www.mulesoft.org/schema/mule/soap 	http://www.mulesoft.org/schema/mule/soap/current/mule-soap.xsd
+        http://www.mulesoft.org/schema/mule/management http://www.mulesoft.org/schema/mule/management/current/mule-management.xsd
+        http://www.mulesoft.org/schema/mule/smtp 	http://www.mulesoft.org/schema/mule/smtp/current/mule-smtp.xsd
+        http://www.mulesoft.org/schema/mule/smtps 	http://www.mulesoft.org/schema/mule/smtps/current/mule-smtps.xsd
+        http://www.mulesoft.org/schema/mule/client 	http://www.mulesoft.org/schema/mule/client/current/mule-client.xsd
+        http://www.mulesoft.org/schema/mule/http 	http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+        http://www.mulesoft.org/schema/mule/https 	http://www.mulesoft.org/schema/mule/https/current/mule-https.xsd
+        http://www.mulesoft.org/schema/mule/test 	http://www.mulesoft.org/schema/mule/test/current/mule-test.xsd
+        http://www.mulesoft.org/schema/mule/jms 	http://www.mulesoft.org/schema/mule/jms/current/mule-jms.xsd
+        http://www.mulesoft.org/schema/mule/quartz http://www.mulesoft.org/schema/mule/quartz/current/mule-quartz.xsd
+        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+        ">
+
+	<configuration>
+		<default-threading-profile maxThreadsActive="32"
+			maxThreadsIdle="16" poolExhaustedAction="RUN" />
+	</configuration>
+
+	<context:property-placeholder
+		location="classpath:iasion.properties,classpath:iasion-override.properties"
+		ignore-resource-not-found="true" />
+
+	<!-- ############################################################# -->
+	<!-- Import Spring sur fichier de description des beans de service -->
+	<!-- ############################################################# -->
+	<spring:beans>
+		<spring:import resource="classpath:mule-appctx.xml" />
+	</spring:beans>
+
+	<!-- ######################################################################################## -->
+	<!-- Connecteur HTTP pour le multipart (bug dans la version mule conmunautaire) -->
+	<!-- ######################################################################################## -->
+	<!-- <http:connector name="httpCookies" enableCookies="true" /> -->
+	<http:connector name="MultiPartHttpConnector"
+		enableCookies="true" reuseAddress="true">
+		<service-overrides
+			messageFactory="orufeo.iasion.http.HttpMultipartMuleMessageFactory" />
+	</http:connector>
+
+
+	<!-- ######################################################################################## -->
+	<!-- Remote Dispatcher pour accès aux flows via un agent programmatic en 
+		remonte (NOT USED) -->
+	<!-- ######################################################################################## 
+		<client:remote-dispatcher-agent> <client:remote-endpoint connector-ref="MultiPartHttpConnector" 
+		address="http://localhost:${serverPortMailClient}" /> </client:remote-dispatcher-agent> -->
+
+	<!-- ######################################################################################## -->
+	<!-- Endpoint Smtp -->
+	<!-- ######################################################################################## -->
+	<!-- <vm:endpoint name="ToSmtpEndpoint" path="tosmtp" /> -->
+
+	<!-- ######################################################################################## -->
+	<!-- Connecteur HTTPS pour amano avec l'import des certificats certifiés 
+		pour accès aux services HTTPS -->
+	<!-- ######################################################################################## -->
+	<https:connector name="IasionHttpsConnector">
+		<!-- <https:tls-client path="keystore.jks" storePassword="toto42" /> -->
+		<!-- <https:tls-server path="keystore.jks" storePassword="toto42" /> -->
+	</https:connector>
+
+	<!-- ######################################################################################## -->
+	<!-- Connecteur SMTPS pour l'envoi de mail avec l'import des certificats 
+		certifiés pour accès aux services HTTPS (keystore en commun) -->
+	<!-- ######################################################################################## -->
+	<smtps:connector name="smtpsConnector">
+		<smtps:tls-client path="keystore.jks" storePassword="toto42" />
+		<smtps:tls-trust-store path="keystore.jks"
+			storePassword="toto42" />
+	</smtps:connector>
+
+	<smtp:gmail-connector name="gmailOrufeo-io"
+		contentType="text/plain" fromAddress="noreply@orufeo.io"
+		replyToAddresses="noreply@orufeo.io" />
+
+
+
+
+	<!-- ###################################################################### -->
+	<!-- ################# TEST FLOW ################ -->
+	<!-- ###################################################################### -->
+	<!-- ###################################################################### -->
+
+	<flow name="test">
+
+		<description></description>
+		<http:inbound-endpoint host="${serverHost}"
+			connector-ref="MultiPartHttpConnector" port="${serverPort}" path="test"
+			exchange-pattern="request-response">
+
+			<response>
+				<json:object-to-json-transformer
+					mimeType="application/json" mapper-ref="jacksonObjectMapper" />
+				<custom-transformer
+					class="orufeo.iasion.transformer.Json2JsonPTransformer" />
+			</response>
+
+		</http:inbound-endpoint>
+
+		<http:body-to-parameter-map-transformer />
+
+		<pooled-component>
+			<property-entry-point-resolver
+				property="http.relative.path" />
+			<spring-object bean="testSRV" />
+		</pooled-component>
+
+	</flow>
+
+
+	<!-- ###################################################################### -->
+	<!-- ################# COOKIE REJECTION FLOW ################ -->
+	<!-- ###################################################################### -->
+	<!-- ###################################################################### -->
+
+
+	<flow name="CookieRejectionFlow">
+		<custom-transformer
+			class="orufeo.iasion.transformer.CookieRejectionToFrontTransformer">
+
+		</custom-transformer>
+	</flow>
+
+
+
+	<!-- ###################################################################### -->
+	<!-- ################# AUTHENTICATION FLOW ################ -->
+	<!-- ###################################################################### -->
+	<!-- ###################################################################### -->
+
+	<flow name="authentication">
+		<description></description>
+		<http:inbound-endpoint host="${serverHost}"
+			connector-ref="MultiPartHttpConnector" port="${serverPort}" path="backoffice"
+			exchange-pattern="request-response">
+			<message-filter onUnaccepted="BoCookieRejectionFlow"
+				throwOnUnaccepted="false">
+				<custom-filter name="cfiasion"
+					class="orufeo.iasion.filter.BoCookieFilter">
+					<spring:property name="userAccountBo" ref="userAccountBO" />
+					<spring:property name="security" value="${iasion.security}" />
+					<spring:property name="objectMapper" ref="jacksonObjectMapper" />
+				</custom-filter>
+			</message-filter>
+			<response>
+				<json:object-to-json-transformer
+					mimeType="application/json" mapper-ref="jacksonObjectMapper" />
+				<custom-transformer
+					class="orufeo.iasion.transformer.Json2JsonPTransformer" />
+			</response>
+		</http:inbound-endpoint>
+
+		<!-- <logger level="INFO" message="#### cookies #### : #[message.inboundProperties['cookies']]" 
+			/> -->
+		<!-- <logger level="INFO" message="#### PATH #### : #[message.inboundProperties['http.relative.path']]" 
+			/> -->
+
+		<http:body-to-parameter-map-transformer />
+
+		<set-variable variableName="path"
+			value="#[message.inboundProperties['http.relative.path']]" />
+
+		<pooled-component>
+			<property-entry-point-resolver
+				property="http.relative.path" />
+			<spring-object bean="authenticationSRV" />
+		</pooled-component>
+
+		<when expression="#[(path contains 'resetInit') and (payload is null)]">
+			<!-- <logger level="INFO" message="resetInit error, send back code 555" 
+				/> -->
+			<expression-transformer
+				expression="#[message.payload='{ \u0022status\u0022: \u0022KO\u0022, \u0022code\u0022: 555, \u0022reason\u0022:\u0022Invalid\u0022 }' ]" />
+		</when>
+
+		<when expression="#[(path contains 'resetPassword') and (payload is null)]">
+			<!-- <logger level="INFO" message="resetPassword error, send back code 
+				555" /> -->
+			<expression-transformer
+				expression="#[message.payload='{ \u0022status\u0022: \u0022KO\u0022, \u0022code\u0022: 555, \u0022reason\u0022:\u0022Invalid checksum\u0022 }']" />
+		</when>
+
+		<otherwise>
+			<logger level="DEBUG" message="OtherCase" />
+		</otherwise>
+
+	</flow>
+
+	<!-- ###################################################################### -->
+	<!-- ################# BACKOFFICE SEARCH FLOW ################ -->
+	<!-- ###################################################################### -->
+	<!-- ###################################################################### -->
+
+	<flow name="backofficesearch">
+		<description></description>
+		<http:inbound-endpoint host="${serverHost}"
+			connector-ref="MultiPartHttpConnector" port="${serverPort}" path="backofficesearch"
+			exchange-pattern="request-response">
+			<message-filter onUnaccepted="BoCookieRejectionFlow"
+				throwOnUnaccepted="false">
+				<custom-filter name="cfbackofficesearch"
+					class="com.amano.glcms.app.backoffice.filter.BoCookieFilter">
+					<spring:property name="adminUserBo" ref="adminUserBO" />
+					<spring:property name="adminClientBo" ref="adminClientBO" />
+					<spring:property name="adminDataBo" ref="adminDataBO" />
+					<spring:property name="adminSearchBo" ref="adminSearchBO" />
+					<spring:property name="adminBeaconBo" ref="adminBeaconBO" />
+					<spring:property name="security" value="${amano.security}" />
+					<spring:property name="objectMapper" ref="jacksonObjectMapper" />
+				</custom-filter>
+			</message-filter>
+			<response>
+				<json:object-to-json-transformer
+					mimeType="application/json" mapper-ref="jacksonObjectMapper" />
+				<custom-transformer
+					class="com.amano.glcms.app.mule.transformers.Json2JsonPTransformer" />
+			</response>
+		</http:inbound-endpoint>
+
+		<choice>
+			<when
+				expression="#[ message.inboundProperties['http.relative.path'] contains 'Contents' ]">
+				<!-- <logger level="INFO" message="@@@@@@ application/json" /> -->
+				<json:json-to-object-transformer
+					returnClass="com.amano.glcms.app.tobj.ContentSearchMessage"
+					mapper-ref="jacksonObjectMapper" />
+			</when>
+			<when
+				expression="#[message.inboundProperties['Content-Type'] contains 'text/plain' ]">
+				<!-- <logger level="INFO" message="@@@@@@ text/plain" /> -->
+				<http:body-to-parameter-map-transformer />
+			</when>
+			<otherwise>
+				<!-- <logger level="INFO" message="default" /> -->
+				<http:body-to-parameter-map-transformer />
+			</otherwise>
+		</choice>
+
+		<async doc:name="Async BO Stats">
+			<custom-transformer
+				class="com.amano.glcms.app.mule.transformers.datapoint.BoMuleMessageToDataPoint">
+				<spring:property name="mixPanelActive" value="${mixpanel.active}" />
+				<spring:property name="mixPanelToken" value="${mixpanel.token}" />
+				<spring:property name="siteDao" ref="siteDAO" />
+				<spring:property name="clientDao" ref="clientDAO" />
+				<spring:property name="contentDao" ref="contentDAO" />
+				<spring:property name="userDao" ref="userDAO" />
+				<spring:property name="amanoAnalyticsFileStorageFao"
+					ref="amanoAnalyticsFileStorageFAO" />
+			</custom-transformer>
+		</async>
+
+		<pooled-component>
+			<property-entry-point-resolver
+				property="http.relative.path" />
+			<spring-object bean="backOfficeSearchSRV" />
+		</pooled-component>
+	</flow>
+
+
+	<!-- ###################################################################### -->
+	<!-- ################# AMANAUTE FLOW ################ -->
+	<!-- ###################################################################### -->
+	<!-- ###################################################################### -->
+
+
+	<flow name="Amanaute">
+		<description>Workflow pour les Amanautes (authentification, gestion de
+			compte, inscription)
+		</description>
+		<http:inbound-endpoint host="${serverHost}"
+			connector-ref="MultiPartHttpConnector" port="${serverPort}" path="amanaute"
+			exchange-pattern="request-response">
+			<message-filter onUnaccepted="CookieRejectionFlow"
+				throwOnUnaccepted="false">
+				<custom-filter name="cfamanaute"
+					class="com.amano.glcms.app.filter.CookieFilter">
+					<spring:property name="timeTokenBo" ref="timeTokenBO" />
+					<spring:property name="amanauteBo" ref="amanauteBO" />
+					<spring:property name="contentBo" ref="contentBO" />
+					<spring:property name="objectMapper" ref="jacksonObjectMapper" />
+				</custom-filter>
+			</message-filter>
+			<response>
+				<json:object-to-json-transformer
+					mimeType="application/json" mapper-ref="jacksonObjectMapper" />
+				<custom-transformer
+					class="com.amano.glcms.app.mule.transformers.Json2JsonPTransformer" />
+			</response>
+		</http:inbound-endpoint>
+
+		<!-- <logger level="INFO" message="#### cookies #### : #[message.inboundProperties['cookies']]" 
+			/> -->
+		<!-- <logger level="INFO" message="#### PATH #### : #[message.inboundProperties['http.relative.path']]" 
+			/> -->
+
+		<choice>
+			<when
+				expression="#[ message.inboundProperties['Content-Type'] contains 'application/x-www-form-urlencoded' ]">
+				<!-- <logger level="INFO" message="@@@@@@ application/x-www-form-urlencoded" 
+					/> -->
+				<json:json-to-object-transformer
+					returnClass="com.amano.glcms.app.tobj.Amanaute" mapper-ref="jacksonObjectMapper" />
+			</when>
+			<when
+				expression="#[ message.inboundProperties['http.relative.path'] contains 'addNewPic' ]">
+				<!-- <logger level="INFO" message="@@@@@@ addNewPic" /> -->
+				<json:json-to-object-transformer
+					returnClass="com.amano.glcms.app.tobj.utobj.AmanauteDetails.AmanautePhoto"
+					mapper-ref="jacksonObjectMapper" />
+			</when>
+			<when
+				expression="#[ message.inboundProperties['http.relative.path'] contains 'unsetCoverPic' ]">
+				<http:body-to-parameter-map-transformer />
+			</when>
+			<when
+				expression="#[ message.inboundProperties['http.relative.path'] contains 'setCoverPic' ]">
+				<!-- <logger level="INFO" message="@@@@@@ setCoverPic" /> -->
+				<json:json-to-object-transformer
+					returnClass="com.amano.glcms.app.tobj.utobj.AmanauteDetails.AmanautePhoto"
+					mapper-ref="jacksonObjectMapper" />
+			</when>
+			<when
+				expression="#[ message.inboundProperties['http.relative.path'] contains 'setProfilePic' ]">
+				<!-- <logger level="INFO" message="@@@@@@ setProfilePic" /> -->
+				<json:json-to-object-transformer
+					returnClass="com.amano.glcms.app.tobj.utobj.AmanauteDetails.AmanautePhoto"
+					mapper-ref="jacksonObjectMapper" />
+			</when>
+			<when
+				expression="#[ message.inboundProperties['http.relative.path'] contains 'deletePic' ]">
+				<!-- <logger level="INFO" message="@@@@@@ deletePic" /> -->
+				<json:json-to-object-transformer
+					returnClass="com.amano.glcms.app.tobj.utobj.AmanauteDetails.AmanautePhoto"
+					mapper-ref="jacksonObjectMapper" />
+			</when>
+			<when
+				expression="#[ message.inboundProperties['Content-Type'] contains 'application/json' ]">
+				<!-- <logger level="INFO" message="@@@@@@ application/json" /> -->
+				<json:json-to-object-transformer
+					returnClass="com.amano.glcms.app.tobj.Amanaute" mapper-ref="jacksonObjectMapper" />
+			</when>
+			<when
+				expression="#[message.inboundProperties['Content-Type'] contains 'text/plain' ]">
+				<!-- <logger level="INFO" message="@@@@@@ text/plain" /> -->
+				<http:body-to-parameter-map-transformer />
+			</when>
+			<otherwise>
+				<!-- <logger level="INFO" message="default" /> -->
+				<http:body-to-parameter-map-transformer />
+			</otherwise>
+		</choice>
+		<pooled-component>
+			<property-entry-point-resolver
+				property="http.relative.path" />
+			<spring-object bean="amanauteSRV" />
+		</pooled-component>
+		<async doc:name="Async Authent-UserManagement">
+			<custom-transformer
+				class="com.amano.glcms.app.mule.transformers.datapoint.AuthentificationToDataPoint">
+				<spring:property name="mixPanelActive" value="${mixpanel.active}" />
+				<spring:property name="mixPanelToken" value="${mixpanel.token}" />
+				<spring:property name="amanoAnalyticsFileStorageFao"
+					ref="amanoAnalyticsFileStorageFAO" />
+				<spring:property name="amanauteDao" ref="amanauteDAO" />
+				<spring:property name="siteDao" ref="siteDAO" />
+			</custom-transformer>
+			<!-- <json:object-to-json-transformer mimeType="application/json" mapper-ref="jacksonObjectMapper" 
+				/> <http:outbound-endpoint address="${upload.service.url}" method="POST" 
+				exchange-pattern="one-way" > <response></response> </https:outbound-endpoint> -->
+		</async>
+
+		<!-- Code spécifique en fonction du type de retour -->
+
+		<choice>
+			<when
+				expression="#[payload is com.amano.glcms.app.mule.ObjectMessages.MailMessagePojo]">
+				<!-- <logger level="INFO" message="MULE :: forgotPassword" /> -->
+				<smtp:outbound-endpoint connector-ref="gmailAmano-io"
+					host="smtp.gmail.com" port="587" user="noreply%40a-mano.fr"
+					password="Yeswecan14" replyTo="noreply@amano.io" from="noreply@amano.io"
+					encoding="UTF-8">
+					<custom-transformer
+						class="com.amano.glcms.app.mule.transformers.MailMessagePojoToMimeMessageTransformer" />
+				</smtp:outbound-endpoint>
+				<set-payload
+					value="#[['email' : payload.email, 'subject' : payload.subject]]"
+					doc:name="Set Payload" />
+			</when>
+			<when
+				expression="#[message.inboundProperties['http.relative.path'] contains 'linkedinAuthenticationResponse' ]">
+				<!-- <logger level="INFO" message="MULE :: linkedinAuthenticationResponse" 
+					/> -->
+				<message-properties-transformer
+					scope="outbound" overwrite="true">
+					<add-message-property key="http.status" value="307" />
+					<add-message-property key="Location" value="#[payload]" />
+				</message-properties-transformer>
+			</when>
+			<otherwise>
+				<logger level="DEBUG" message="MULE :: Other" />
+			</otherwise>
+		</choice>
+
+	</flow>
+
+
+	<!-- ###################################################################### -->
+	<!-- ################# BACKOFFICE ADTAGS FLOW ############################# -->
+	<!-- ###################################################################### -->
+	<!-- ###################################################################### -->
+
+	<flow name="tags">
+
+		<description></description>
+		<http:inbound-endpoint host="${serverHost}"
+			connector-ref="MultiPartHttpConnector" port="${serverPort}" path="tags"
+			exchange-pattern="request-response">
+			<message-filter onUnaccepted="BoCookieRejectionFlow"
+				throwOnUnaccepted="false">
+				<custom-filter name="cfbackofficetags"
+					class="com.amano.glcms.app.backoffice.filter.BoCookieFilter">
+					<spring:property name="adminUserBo" ref="adminUserBO" />
+					<spring:property name="adminClientBo" ref="adminClientBO" />
+					<spring:property name="adminDataBo" ref="adminDataBO" />
+					<spring:property name="adminSearchBo" ref="adminSearchBO" />
+					<spring:property name="adminBeaconBo" ref="adminBeaconBO" />
+					<spring:property name="security" value="${amano.security}" />
+					<spring:property name="objectMapper" ref="jacksonObjectMapper" />
+				</custom-filter>
+			</message-filter>
+			<response>
+				<json:object-to-json-transformer
+					mimeType="application/json" mapper-ref="jacksonObjectMapper" />
+				<custom-transformer
+					class="com.amano.glcms.app.mule.transformers.Json2JsonPTransformer" />
+			</response>
+		</http:inbound-endpoint>
+
+		<choice>
+			<when
+				expression="#[ message.inboundProperties['http.relative.path'] contains 'updateSites' ]">
+				<!-- <logger level="INFO" message="@@@@@@ application/json" /> -->
+				<json:json-to-object-transformer
+					returnClass="com.amano.glcms.app.tobj.tagging.Site4TagDTO"
+					mapper-ref="jacksonObjectMapper" />
+			</when>
+			<when
+				expression="#[ message.inboundProperties['http.relative.path'] contains 'updateItems' ]">
+				<!-- <logger level="INFO" message="@@@@@@ application/json" /> -->
+				<json:json-to-object-transformer
+					returnClass="com.amano.glcms.app.tobj.tagging.Item4TagDTO"
+					mapper-ref="jacksonObjectMapper" />
+			</when>
+			<otherwise>
+				<!-- <logger level="INFO" message="on est dans TAGS ! call: message.inboundProperties['http.relative.path']" 
+					/> -->
+				<http:body-to-parameter-map-transformer />
+			</otherwise>
+		</choice>
+
+
+		<pooled-component>
+			<property-entry-point-resolver
+				property="http.relative.path" />
+			<spring-object bean="backOfficeTagsSRV" />
+		</pooled-component>
+
+	</flow>
+
+	<!-- ###################################################################### -->
+	<!-- ################# BACKOFFICE ANALYTICS BIGQUERY ############################# -->
+	<!-- ###################################################################### -->
+	<!-- ###################################################################### -->
+
+	<flow name="analytics">
+
+		<description></description>
+		<http:inbound-endpoint host="${serverHost}"
+			connector-ref="MultiPartHttpConnector" port="${serverPort}" path="analytics"
+			exchange-pattern="request-response">
+			<message-filter onUnaccepted="BoCookieRejectionFlow"
+				throwOnUnaccepted="false">
+				<custom-filter name="cfbackofficeanalytics-bq"
+					class="com.amano.glcms.app.backoffice.filter.BoCookieFilter">
+					<spring:property name="adminUserBo" ref="adminUserBO" />
+					<spring:property name="adminClientBo" ref="adminClientBO" />
+					<spring:property name="adminDataBo" ref="adminDataBO" />
+					<spring:property name="adminSearchBo" ref="adminSearchBO" />
+					<spring:property name="adminBeaconBo" ref="adminBeaconBO" />
+					<spring:property name="security" value="${amano.security}" />
+					<spring:property name="objectMapper" ref="jacksonObjectMapper" />
+				</custom-filter>
+			</message-filter>
+			<response>
+				<json:object-to-json-transformer
+					mimeType="application/json" mapper-ref="jacksonObjectMapper" />
+				<custom-transformer
+					class="com.amano.glcms.app.mule.transformers.Json2JsonPTransformer" />
+			</response>
+		</http:inbound-endpoint>
+
+		<choice>
+			<when
+				expression="#[ message.inboundProperties['http.relative.path'] contains 'get' ]">
+				<!-- <logger level="INFO" message="@@@@@@ application/json" /> -->
+				<json:json-to-object-transformer
+					returnClass="com.amano.glcms.app.mule.dashboard.DashboardRequest"
+					mapper-ref="jacksonObjectMapper" />
+			</when>
+			<otherwise>
+				<http:body-to-parameter-map-transformer />
+			</otherwise>
+		</choice>
+
+
+		<pooled-component>
+			<property-entry-point-resolver
+				property="http.relative.path" />
+			<spring-object bean="backofficeDashboardSRV" />
+		</pooled-component>
+
+	</flow>
+
+
+	<!-- ###################################################################### -->
+	<!-- ################# MEDIA SERVER + RESSOURCES ################ -->
+	<!-- ###################################################################### -->
+	<!-- ###################################################################### -->
+
+	<flow name="download-http">
+		<description>Repertoire de customisation des sites client
+		</description>
+		<http:inbound-endpoint host="${serverHost}"
+			connector-ref="MultiPartHttpConnector" port="${serverPort}" path="downloadbo" />
+		<!-- <http:static-resource-handler resourceBase="${upload.dirpath}" defaultFile="index.html" 
+			/> -->
+		<pooled-component>
+			<spring-object bean="customWebDownload" />
+		</pooled-component>
+		<catch-exception-strategy doc:name="Catch Exception Strategy on custom"
+			enableNotifications="false">
+			<set-property propertyName="http.status" value="404" />
+		</catch-exception-strategy>
+	</flow>
+
+	<flow name="download-http-assets">
+		<description>Repertoire de customisation des sites client
+		</description>
+		<http:inbound-endpoint host="${serverHost}"
+			connector-ref="MultiPartHttpConnector" port="${serverPort}" path="downloadAssets" />
+		<pooled-component>
+			<spring-object bean="assetsWebDownload" />
+		</pooled-component>
+		<catch-exception-strategy doc:name="Catch Exception Strategy on assets"
+			enableNotifications="false">
+			<set-property propertyName="http.status" value="404" />
+		</catch-exception-strategy>
+	</flow>
+
+	<flow name="download-http-media">
+		<description>Repertoire data/custom</description>
+		<http:inbound-endpoint host="${serverHost}"
+			connector-ref="MultiPartHttpConnector" port="${serverPort}" path="downloadMedia" />
+		<pooled-component>
+			<spring-object bean="dataWebDownload" />
+		</pooled-component>
+		<catch-exception-strategy doc:name="Catch Exception Strategy on media"
+			enableNotifications="false">
+			<set-property propertyName="http.status" value="404" />
+		</catch-exception-strategy>
+	</flow>
+
+	<flow name="upload">
+		<http:inbound-endpoint connector-ref="MultiPartHttpConnector"
+			host="${serverHost}" port="${serverPort}" path="upload"
+			exchange-pattern="request-response">
+			<!-- <http:http-response-to-object-transformer/> -->
+			<!-- <byte-array-to-object-transformer/> -->
+			<!-- <custom-transformer class="org.mule.transformer.simple.ByteArrayToMuleMessage"/> -->
+			<message-filter onUnaccepted="CookieRejectionFlow"
+				throwOnUnaccepted="false">
+				<custom-filter name="cfupload"
+					class="com.amano.glcms.app.backoffice.filter.BoCookieFilter">
+					<spring:property name="adminUserBo" ref="adminUserBO" />
+					<spring:property name="adminClientBo" ref="adminClientBO" />
+					<spring:property name="adminDataBo" ref="adminDataBO" />
+					<spring:property name="adminSearchBo" ref="adminSearchBO" />
+					<spring:property name="security" value="${amano.security}" />
+					<spring:property name="objectMapper" ref="jacksonObjectMapper" />
+				</custom-filter>
+			</message-filter>
+			<response>
+				<json:object-to-json-transformer
+					mimeType="application/json" mapper-ref="jacksonObjectMapper" />
+				<custom-transformer
+					class="com.amano.glcms.app.mule.transformers.Json2JsonPTransformer" />
+			</response>
+		</http:inbound-endpoint>
+		<pooled-component>
+			<spring-object bean="Upload" />
+		</pooled-component>
+	</flow>
+
+	<flow name="uploadNg">
+		<http:inbound-endpoint connector-ref="MultiPartHttpConnector"
+			host="${serverHost}" port="${serverPort}" path="uploadlocal"
+			exchange-pattern="request-response">
+			<!-- <http:http-response-to-object-transformer/> -->
+			<!-- <byte-array-to-object-transformer/> -->
+			<!-- <custom-transformer class="org.mule.transformer.simple.ByteArrayToMuleMessage"/> -->
+			<response>
+				<json:object-to-json-transformer
+					mimeType="application/json" mapper-ref="jacksonObjectMapper" />
+				<custom-transformer
+					class="com.amano.glcms.app.mule.transformers.Json2JsonPTransformer" />
+			</response>
+		</http:inbound-endpoint>
+		<!-- <logger level="INFO" message="#### config #### : #[message.inboundProperties['config']]" 
+			/> -->
+		<!-- <logger level="INFO" message="#### Attachment #### : #[attachments:*]" 
+			/> -->
+
+		<!-- <message-properties-transformer scope="outbound" overwrite="true"> 
+			<add-message-properties /> </message-properties-transformer> -->
+		<copy-attachments attachmentName="*" />
+		<copy-properties propertyName="config" />
+		<!-- <request-reply> ### <http:outbound-endpoint address="${upload.service.url}" 
+			method="POST" exchange-pattern="request-response" disableTransportTransformer="true" 
+			transformer-refs="MyObjectToHttpClientMethodRequest"/> ### <https:outbound-endpoint 
+			address="${upload.service.url}" method="POST" exchange-pattern="request-response" 
+			connector-ref="AmanoHttpsConnector"> <message-properties-transformer scope="outbound"> 
+			<delete-message-property key="MULE_REPLYTO" /> <add-message-property key="MULE_REPLYTO" 
+			value="${upload.service.response.url}" /> </message-properties-transformer> 
+			</https:outbound-endpoint> <http:inbound-endpoint host="${serverHost}" connector-ref="MultiPartHttpConnector" 
+			port="${serverPort}" path="uploadlocalResponse"> <json:json-to-object-transformer 
+			mapper-ref="jacksonObjectMapper" returnClass="com.amano.glcms.app.tobj.Content" 
+			/> </http:inbound-endpoint> </request-reply> -->
+
+		<!-- ici il faut mettre un component qui prend le fichier et qui l'envoie 
+			à GStorage puis qui renvoie un content AmMedia -->
+		<pooled-component>
+			<spring-object bean="UploadMedia" />
+		</pooled-component>
+
+		<!-- Enregistrement du content -->
+		<!-- <logger level="INFO" message="#### PAYLOAD #### : #[payload]" /> -->
+		<pooled-component>
+			<spring-object bean="UploadNg" />
+		</pooled-component>
+	</flow>
+
+
+
+
+	<!-- ###################################################################### -->
+	<!-- ################# WEATHER FLOW ################ -->
+	<!-- ###################################################################### -->
+	<!-- ###################################################################### -->
+
+	<flow name="weather">
+		<http:inbound-endpoint connector-ref="MultiPartHttpConnector"
+			host="${serverHost}" port="${serverPort}" path="weather"
+			exchange-pattern="request-response">
+			<response>
+				<!-- <logger level="INFO" message="#### REPONSE JACKSON MAPPER ####" 
+					/> -->
+				<json:object-to-json-transformer
+					mimeType="application/json" mapper-ref="jacksonObjectMapper" />
+				<custom-transformer
+					class="com.amano.glcms.app.mule.transformers.Json2JsonPTransformer" />
+			</response>
+		</http:inbound-endpoint>
+
+		<set-variable variableName="hash"
+			value="#[message.inboundProperties['hash']]" />
+
+		<custom-transformer
+			class="com.amano.glcms.app.mule.transformers.weather.CheckWeatherTransformer" />
+
+		<!-- <logger level="INFO" message="#### SORTIE DE T1 ####" /> -->
+		<test:component logMessageDetails="true" />
+		<!-- <logger level="INFO" message="#### SORTIE DE TRANSFERT DE QUERY STRING 
+			####" /> -->
+		<!-- <logger level="INFO" message="#### Param: url = ${weather.service.url} 
+			, key=${weather.apikey}, latlgt=#[message.inboundProperties['lat'] + ',' 
+			+ message.inboundProperties['lgt']] , hash=#[message.inboundProperties['hash']] 
+			####" /> -->
+		<!-- <logger level="INFO" message="#### Param: url = ${weather.service.url}${weather.apikey}/#[message.inboundProperties['lat']],#[message.inboundProperties['lgt']]?lang=#[message.outboundProperties['lang']]&amp;units=#[message.inboundProperties['units']]" 
+			/> -->
+		<!-- <logger level="INFO" message="#### Param: needUpdate =#[message.outboundProperties['needUpdate']] 
+			####" /> -->
+
+		<choice>
+			<when expression="#[message.outboundProperties['needUpdate']]">
+				<!-- <logger level="INFO" message="#### ENTREE DE PROXY hash=#[hash] 
+					####" /> -->
+
+				<json:object-to-json-transformer
+					mimeType="application/json" mapper-ref="jacksonObjectMapper" />
+
+				<https:outbound-endpoint connector-ref="AmanoHttpsConnector"
+					address="${weather.service.url}${weather.apikey}/#[message.inboundProperties['lat']],#[message.inboundProperties['lgt']]?lang=#[message.outboundProperties['lang']]&amp;units=#[message.inboundProperties['units']]"
+					method="GET" exchange-pattern="request-response">
+
+					<response>
+						<!-- <logger level="INFO" message="#### REPONSE JACKSON MAPPER ####" 
+							/> -->
+
+						<json:json-to-object-transformer
+							mapper-ref="jacksonObjectMapper" returnClass="com.amano.glcms.app.tobj.weather.WeatherReport" />
+
+					</response>
+				</https:outbound-endpoint>
+
+
+				<!-- <logger level="INFO" message="#### SORTIE DE outbound-endpoint hash=#[hash] 
+					####" /> -->
+				<!-- <logger level="INFO" message="#### SORTIE DE PROXY hash=#[hash] 
+					####" /> -->
+
+				<custom-transformer
+					class="com.amano.glcms.app.mule.transformers.weather.StoreWeatherTransformer" />
+
+				<!-- <logger level="INFO" message="#### SORTIE DE T2 hash=#[hash] ####" 
+					/> -->
+			</when>
+			<otherwise>
+				<logger level="DEBUG" message="default" />
+			</otherwise>
+		</choice>
+		<async doc:name="Async Surfing">
+			<custom-transformer
+				class="com.amano.glcms.app.mule.transformers.datapoint.FrontMuleMessageToDataPoint">
+				<spring:property name="mixPanelActive" value="${mixpanel.active}" />
+				<spring:property name="mixPanelToken" value="${mixpanel.token}" />
+				<spring:property name="amanoAnalyticsFileStorageFao"
+					ref="amanoAnalyticsFileStorageFAO" />
+				<spring:property name="siteDao" ref="siteDAO" />
+				<spring:property name="clientDao" ref="clientDAO" />
+				<spring:property name="contentDao" ref="contentDAO" />
+				<spring:property name="amanauteDao" ref="amanauteDAO" />
+				<spring:property name="adTagWao" ref="adTagWAO" />
+			</custom-transformer>
+		</async>
+
+	</flow>
+
+
+
+</mule>

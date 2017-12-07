@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd">
+		
+		
+	<!-- Configuration de Jackson pour la transformation JSON. -->
+	<bean id="jacksonObjectMapper" class="org.codehaus.jackson.map.ObjectMapper" >
+		<property name="dateFormat">
+			<bean class="java.text.SimpleDateFormat">
+				<constructor-arg type="java.lang.String" value="yyyy-MM-dd HH:mm:ss.SSS"></constructor-arg>
+			</bean>
+		</property>
+	</bean>
+	<bean id="jacksonSerializationConfig" class="org.codehaus.jackson.map.SerializationConfig"
+		factory-method="getSerializationConfig" factory-bean="jacksonObjectMapper" />
+	<bean id="jacksonDeserializationConfig" class="org.codehaus.jackson.map.DeserializationConfig"
+		factory-method="getDeserializationConfig" factory-bean="jacksonObjectMapper" />
+	<bean
+		class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+		<property name="targetObject" ref="jacksonSerializationConfig" />
+		<property name="targetMethod" value="setSerializationInclusion" />
+		<property name="arguments">
+			<list>
+				<value type="org.codehaus.jackson.map.annotate.JsonSerialize.Inclusion">NON_NULL</value>
+			</list>
+		</property>
+	</bean>
+	<bean
+		class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+		<property name="targetObject" ref="jacksonSerializationConfig" />
+		<property name="targetMethod" value="set" />
+		<property name="arguments">
+			<list>
+				<value type="org.codehaus.jackson.map.SerializationConfig.Feature">INDENT_OUTPUT</value>
+				<value>${amano.json.jackson.prettyprint}</value>
+			</list>
+		</property>
+	</bean>
+	<bean
+		class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+		<property name="targetObject" ref="jacksonSerializationConfig" />
+		<property name="targetMethod" value="set" />
+		<property name="arguments">
+			<list>
+				<value type="org.codehaus.jackson.map.SerializationConfig.Feature">WRITE_DATES_AS_TIMESTAMPS</value>
+				<value>false</value>
+			</list>
+		</property>
+	</bean>
+	<bean
+		class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+		<property name="targetObject" ref="jacksonDeserializationConfig" />
+		<property name="targetMethod" value="set" />
+		<property name="arguments">
+			<list>
+				<value type="org.codehaus.jackson.map.DeserializationConfig.Feature">FAIL_ON_UNKNOWN_PROPERTIES</value>
+				<value>false</value>
+			</list>
+		</property>
+	</bean>
+	
+</beans>

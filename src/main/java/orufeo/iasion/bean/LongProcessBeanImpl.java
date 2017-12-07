@@ -40,9 +40,11 @@ public class LongProcessBeanImpl implements LongProcessBean {
 	@Setter private Integer ORDERCLOSE_WAITINGTIME;     // 500 ms
 	@Setter private Integer ORDERSTATUS_MAXTRY; 		// 500
 	@Setter private Integer ORDERSTATUS_WAITINGTIME;    // 500 ms
+	@Setter private Integer TRANSFER_MAXTRY; 			// 500
+	@Setter private Integer TRANSFER_WAITINGTIME;   	// 500 ms
 	@Setter private Integer ORDERBUY_MAXTRY; 			// 500
 	@Setter private Integer ORDERBUY_WAITINGTIME;   	// 500 ms
-	@Setter private Double ORDERBUY_THRESHOLD;      	//0.995
+	@Setter private Double ORDERBUY_THRESHOLD;      	// 0.995
 
 	private static Logger log = Logger.getLogger(LongProcessBeanImpl.class);
 
@@ -194,18 +196,38 @@ public class LongProcessBeanImpl implements LongProcessBean {
 			throw new MaxTriesExceededException("Too many tries for order status check before completion", "ORDERSTATUS_MAXTRY");
 	}
 
-	private Double proceedTransfer(Wallet wallet, UserAccount user, Long orderId, String apiKey, String secretKey) throws TransferException, IOException {
+	private Double proceedTransfer(Wallet wallet, UserAccount user, Long orderId, String apiKey, String secretKey) throws TransferException, InterruptedException, IOException {
 
-		List<BitFinexTransferStatus> statusTransfer = bitfinexWao.transfer("trading", "exchange", wallet.getData().getQuoteCurrencyLabel().toLowerCase(), wallet.getData().getQuoteCurrencyValue(), apiKey, secretKey);
-
-		//---> make a loop to CHECK
-
-		if ("error".equals(statusTransfer.get(0).getStatus().toLowerCase())) {
-			sendMail(user, orderId, "TRANSFER_FUND", "Transfer order between your wallets during the long process with BitFinex returned an error, following the close order ID:"+orderId+". Process stopped, no buy order sent.");
-			throw new TransferException("Impossible to transfer value from trading wallet to exchange wallet");
+		List<BitFinexTransferStatus> statusTransfer = null;
+		
+		// we loop until it is done
+		
+		for ( int i=0; i < TRANSFER_MAXTRY ; i++) {
+		
+			Thread.sleep(TRANSFER_WAITINGTIME);
+			
+			statusTransfer = bitfinexWao.transfer("trading", "exchange", wallet.getData().getQuoteCurrencyLabel().toLowerCase(), wallet.getData().getQuoteCurrencyValue(), apiKey, secretKey);
+			
+			if ("error".equals(statusTransfer.get(0).getStatus().toLowerCase())) {
+				sendMail(user, orderId, "TRANSFER_FUND", "Transfer order between your wallets during the long process with BitFinex returned an error, following the close order ID:"+orderId+". Try number: "+i);
+			} else { //success	
+				try { 
+					for (BitFinexBalanceStatus balance : bitfinexWao.getBalances(apiKey, secretKey) ) {
+						if ( "exchange".equals(balance.getType()) && balance.getCurrencyLabel().equals(wallet.getData().getQuoteCurrencyLabel().toLowerCase())) {
+							return Double.valueOf(balance.getAvailable());
+						}
+					}
+				} catch (BalancesException e) {
+					sendMail(user, orderId, "TRANSFER_FUND", "Impossible to check transfered value in exchange wallet, following the close order ID:"+orderId+". Try number: "+i);
+				}	
+			}
+			
 		}
 
-		return wallet.getData().getQuoteCurrencyValue();
+		//if here the transfer + check was not completed
+		sendMail(user, orderId, "TRANSFER_FUND", "Transfer order between your wallets during the long process, following the close order ID:"+orderId+". Exhausted number of retries");
+		throw new TransferException("Impossible to transfer + check transfered value in exchange wallet");
+
 	}
 
 	private Double getAvailableEquity(Wallet wallet, UserAccount user, Long orderId, String apiKey, String secretKey) throws BalancesException, IOException {

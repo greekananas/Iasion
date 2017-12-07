@@ -3,6 +3,9 @@ package orufeo.iasion.component;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.apache.log4j.Logger;
 import org.mule.api.annotations.param.Payload;
@@ -37,6 +40,8 @@ public class OrchestratorSRV {
 	@Setter private ClotureLongProcessBean clotureLongProcessBean;
 	@Setter private ClotureShortProcessBean clotureShortProcessBean;
 
+	private ExecutorService executorService = Executors.newCachedThreadPool();
+	
 	private static Logger log = Logger.getLogger(OrchestratorSRV.class);
 
 	public HttpStatus macdAnalysis(@Payload Map<String, String> args) {
@@ -66,38 +71,11 @@ public class OrchestratorSRV {
 
 			List<UserAccount> users = userAccountBo.get();
 
-			//iterate on all users
+			//iterate on all users asynchronously and in parallel
 			for (UserAccount user : users) {
-
-				//retrieve all wallets on all exchanges for the user
-				List<Wallet> wallets = walletBo.getForUser(user.getMetadata().getGuid());
-
-				//iterate on his wallets to check if has one or more wallets, matching the currency and quotecurrency relevant to this analysis
-				List<Wallet> matchs = new ArrayList<Wallet>();
 				
-				for (Wallet wallet : wallets) {
-					if (wallet.getData().getQuoteCurrencyLabel().toUpperCase().equals(quoteCurrency.toUpperCase()) && wallet.getData().getCurrencyLabel().toUpperCase().equals(currency.toUpperCase())) {
-						matchs.add(wallet);
-					}
-				}
+				CompletableFuture.runAsync(()-> manageUser(user, signal, quoteCurrency, currency), executorService);
 
-				//we have the wallets that we need to impact for the user, let's do it
-				for (Wallet wallet : matchs) {
-
-					if ("long".equals(signal)) {
-						longProcessBean.process(wallet);
-					} else if ("short".equals(signal)) {
-						shortProcessBean.process(wallet);
-					} else if ("prise long".equals(signal)) {
-						priseLongProcessBean.process(wallet);
-					} else if ("prise short".equals(signal)) {
-						priseShortProcessBean.process(wallet);
-					} else if ("cloture long".equals(signal)) {
-						clotureLongProcessBean.process(wallet);
-					} else if ("cloture short".equals(signal)) {
-						clotureShortProcessBean.process(wallet);
-					} 
-				}
 			}
 
 			return new HttpStatus("OK", "200", "");
@@ -105,8 +83,46 @@ public class OrchestratorSRV {
 		} else
 			return new HttpStatus("Wrong Token", "500", "");
 	}
-
-
 	
+	/*****************
+	 * 
+	 * 
+	 * 	PRIVATE METHOD
+	 * 
+	 */
+	
+	private void manageUser(UserAccount user, String signal, String quoteCurrency, String currency) {
+		
+		//retrieve all wallets on all exchanges for the user
+		List<Wallet> wallets = walletBo.getForUser(user.getMetadata().getGuid());
+
+		//iterate on his wallets to check if has one or more wallets, matching the currency and quotecurrency relevant to this analysis
+		List<Wallet> matchs = new ArrayList<Wallet>();
+		
+		for (Wallet wallet : wallets) {
+			if (wallet.getData().getQuoteCurrencyLabel().toUpperCase().equals(quoteCurrency.toUpperCase()) && wallet.getData().getCurrencyLabel().toUpperCase().equals(currency.toUpperCase())) {
+				matchs.add(wallet);
+			}
+		}
+
+		//we have the wallets that we need to impact for the user, let's do it
+		for (Wallet wallet : matchs) {
+
+			if ("long".equals(signal)) {
+				longProcessBean.process(wallet);
+			} else if ("short".equals(signal)) {
+				shortProcessBean.process(wallet);
+			} else if ("prise long".equals(signal)) {
+				priseLongProcessBean.process(wallet);
+			} else if ("prise short".equals(signal)) {
+				priseShortProcessBean.process(wallet);
+			} else if ("cloture long".equals(signal)) {
+				clotureLongProcessBean.process(wallet);
+			} else if ("cloture short".equals(signal)) {
+				clotureShortProcessBean.process(wallet);
+			} 
+		}
+		
+	}
 
 }

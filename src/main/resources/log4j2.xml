@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Configuration status="INFO" monitorInterval="30">
+  
+  <Appenders>
+        <RollingFile name="RollingFile" fileName="${sys:mule.home}/logs/mule-app-iasion-core.log"
+                filePattern="${sys:mule.home}/logs/mule-app-iasion-core.log-%i">
+                <PatternLayout>
+                        <pattern>%d %highlight{%p} [%t] %c{2.} - %m%n</pattern>
+                </PatternLayout>
+                <Policies>
+                        <SizeBasedTriggeringPolicy size="24 MB" />
+                </Policies>
+                <DefaultRolloverStrategy max="4" />
+        </RollingFile>
+  </Appenders>
+  
+  <Loggers>
+        <AsyncLogger name="org.springframework" level="info" additivity="false">
+                <AppenderRef ref="RollingFile"/>
+        </AsyncLogger>
+        <AsyncLogger name="org.mule" level="info" additivity="false">
+                <AppenderRef ref="RollingFile"/>
+        </AsyncLogger>
+        <AsyncLogger name="com.amano" level="info" additivity="false">
+                <AppenderRef ref="RollingFile"/>
+        </AsyncLogger>
+        
+        <Root level="INFO">
+		  <AppenderRef ref="RollingFile"/>
+		</Root>
+        
+  </Loggers>
+  
+
+
+</Configuration>

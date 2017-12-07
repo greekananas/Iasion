@@ -80,7 +80,7 @@ public class CookieFilter implements Filter {
 			}
 
 		} catch (Exception e) {
-			log.warn("Ads CookieFilter::accept Filtre inboundProperty Error: ",e);
+			log.warn("Iasion CookieFilter::accept Filtre inboundProperty Error: ",e);
 		}
 
 		return acceptLogin;
