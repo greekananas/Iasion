@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:context="http://www.springframework.org/schema/context" xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd">
+
+	<description>Contexte d'application à importer dans un context
+		supérieur. A charge du context sup de fournir les properties si besoin
+	</description>
+
+	<bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource"
+		destroy-method="close">
+		<property name="driverClassName" value="${db.driver}" />
+		<property name="url" value="${db.url}" />
+		<property name="username" value="${db.user}" />
+		<property name="password" value="${db.password}" />
+		<!-- <property name="maxActive" value="10" /> <property name="maxIdle" 
+			value="5" /> <property name="minIdle" value="1" /> <property name="poolPreparedStatements" 
+			value="true" /> <property name="initialSize" value="1" /> -->
+	</bean>
+
+	<tx:advice id="txAdvice" transaction-manager="transactionManager">
+		<tx:attributes>
+			<tx:method name="getCurrentBasket" />
+			<tx:method name="get*" read-only="true" />
+			<tx:method name="*" />
+		</tx:attributes>
+	</tx:advice>
+
+	<aop:config>
+		<aop:pointcut id="boOperation"
+			expression="execution(* orufeo.iasion.*bo.*.*(..))" />
+		<aop:advisor advice-ref="txAdvice" pointcut-ref="boOperation" />
+	</aop:config>
+
+<!-- 	<aop:config> -->
+<!-- 		<aop:pointcut id="daoOperation" -->
+<!-- 			expression="execution(* orufeo.iasion.dao.*.*(..))" /> -->
+<!-- 		<aop:advisor advice-ref="txAdvice" pointcut-ref="daoOperation" /> -->
+<!-- 	</aop:config> -->
+
+	
+	<bean id="transactionManager"
+		class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource" />
+	</bean>
+
+
+	<bean id="exchangeDAO" class="orufeo.iasion.dao.ExchangeDaoImpl"
+		init-method="init">
+		<property name="transactionManager" ref="transactionManager" />
+		<property name="mapper" ref="jacksonObjectMapper" />
+	</bean>
+
+	<bean id="orderDAO" class="orufeo.iasion.dao.OrderDaoImpl"
+	    init-method="init">
+		<property name="transactionManager" ref="transactionManager" />
+		<property name="mapper" ref="jacksonObjectMapper" />
+	</bean>
+
+	<bean id="userAccount" class="orufeo.iasion.dao.UserAccountDaoImpl"
+		init-method="init">
+		<property name="transactionManager" ref="transactionManager" />
+		<property name="mapper" ref="jacksonObjectMapper" />
+	</bean>
+
+	<bean id="walletDAO" class="orufeo.iasion.dao.WalletDaoImpl"
+		init-method="init">
+		<property name="transactionManager" ref="transactionManager" />
+		<property name="mapper" ref="jacksonObjectMapper" />
+	</bean>
+
+	<bean id="walletHistoryDAO" class="orufeo.iasion.dao.WalletHistoryDaoImpl"
+		init-method="init">
+		<property name="transactionManager" ref="transactionManager" />
+		<property name="mapper" ref="jacksonObjectMapper" />
+	</bean>
+
+	<bean id="bitfinexWAO" class="orufeo.iasion.wao.BitFinexWaoImpl" >
+		<property name="BITFINEX_DOMAIN" value="${iasion.urldomain}" />
+		<property name="BITFINEX_PROTOCOL" value="${iasion.urlprotocol}" />
+		<property name="BITFINEX_ALGORITHM_HMACSHA384" value="${iasion.hmacsha384}" />
+		<property name="mapper" ref="jacksonObjectMapper" />
+		<property name="restTemplate" ref="restTemplateBean" />
+	</bean>
+	
+	<bean id="historyDataWAO" class="orufeo.iasion.wao.HistoryDataWaoImpl" >
+		<property name="mapper" ref="jacksonObjectMapper" />
+		<property name="restTemplate" ref="restTemplateBean" />
+	</bean>
+	
+</beans>

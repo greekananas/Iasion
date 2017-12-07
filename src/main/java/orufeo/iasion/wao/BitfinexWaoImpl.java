@@ -44,9 +44,9 @@ import orufeo.iasion.exception.TransferException;
 
 public class BitfinexWaoImpl implements BitfinexWao {
 
-	@Setter  private String PROTOCOL; // "https://";
-	@Setter  private String DOMAIN;   // "api.bitfinex.com";
-	@Setter private String ALGORITHM_HMACSHA384; // "HmacSHA384"	
+	@Setter  private String BITFINEX_PROTOCOL; 				// "https://";
+	@Setter  private String BITFINEX_DOMAIN;   				// "api.bitfinex.com";
+	@Setter private String BITFINEX_ALGORITHM_HMACSHA384; 	// "HmacSHA384"	
 	@Setter	private ObjectMapper mapper;
 	@Setter private RestTemplate restTemplate;
 
@@ -67,7 +67,7 @@ public class BitfinexWaoImpl implements BitfinexWao {
 
 		try {
 			//API CALL
-			String response = httpCallBitFinex(PROTOCOL, DOMAIN, path, "POST", apiKey, secretKey, payload);
+			String response = httpCallBitFinex(BITFINEX_PROTOCOL, BITFINEX_DOMAIN, path, "POST", apiKey, secretKey, payload);
 
 			return mapper.readValue(response, mapper.getTypeFactory().constructCollectionType(List.class, BitFinexPosition.class));
 		} catch (JsonParseException e) {
@@ -103,7 +103,7 @@ public class BitfinexWaoImpl implements BitfinexWao {
 		String payload = jo.toString();
 
 		try {
-			String response = httpCallBitFinex(PROTOCOL, DOMAIN, "/v1/order/new", "POST", apiKey, secretKey, payload);
+			String response = httpCallBitFinex(BITFINEX_PROTOCOL, BITFINEX_DOMAIN, "/v1/order/new", "POST", apiKey, secretKey, payload);
 
 			return mapper.readValue(response, BitFinexOrderStatus.class);
 		} catch (JsonParseException e) {
@@ -130,7 +130,7 @@ public class BitfinexWaoImpl implements BitfinexWao {
 		String payload = jo.toString();
 
 		try {
-			String response = httpCallBitFinex(PROTOCOL, DOMAIN, path, "POST", apiKey, secretKey, payload);
+			String response = httpCallBitFinex(BITFINEX_PROTOCOL, BITFINEX_DOMAIN, path, "POST", apiKey, secretKey, payload);
 
 			return mapper.readValue(response, BitFinexOrderStatus.class);
 		} catch (JsonParseException e) {
@@ -157,7 +157,7 @@ public class BitfinexWaoImpl implements BitfinexWao {
 
 		String payload = jo.toString();
 		try {
-			String response = httpCallBitFinex(PROTOCOL, DOMAIN, path, "POST", apiKey, secretKey, payload);
+			String response = httpCallBitFinex(BITFINEX_PROTOCOL, BITFINEX_DOMAIN, path, "POST", apiKey, secretKey, payload);
 
 			return mapper.readValue(response, BitFinexOrderStatus.class);
 		} catch (JsonParseException e) {
@@ -186,7 +186,7 @@ public class BitfinexWaoImpl implements BitfinexWao {
 
 		String payload = jo.toString();
 		try {
-			String response = httpCallBitFinex(PROTOCOL, DOMAIN, path, "POST", apiKey, secretKey, payload);
+			String response = httpCallBitFinex(BITFINEX_PROTOCOL, BITFINEX_DOMAIN, path, "POST", apiKey, secretKey, payload);
 
 			return mapper.readValue(response, mapper.getTypeFactory().constructCollectionType(List.class, BitFinexTransferStatus.class));
 		} catch (JsonParseException e) {
@@ -212,7 +212,7 @@ public class BitfinexWaoImpl implements BitfinexWao {
 
 		String payload = jo.toString();
 		try {
-			String response = httpCallBitFinex(PROTOCOL, DOMAIN, path, "POST", apiKey, secretKey, payload);
+			String response = httpCallBitFinex(BITFINEX_PROTOCOL, BITFINEX_DOMAIN, path, "POST", apiKey, secretKey, payload);
 
 			return mapper.readValue(response, mapper.getTypeFactory().constructCollectionType(List.class, BitFinexBalanceStatus.class));
 		} catch (JsonParseException e) {
@@ -244,7 +244,7 @@ public class BitfinexWaoImpl implements BitfinexWao {
 
 		String payload = jo.toString();
 		try {
-			String response = httpCallBitFinex(PROTOCOL, DOMAIN, path, "POST", apiKey, secretKey, payload);
+			String response = httpCallBitFinex(BITFINEX_PROTOCOL, BITFINEX_DOMAIN, path, "POST", apiKey, secretKey, payload);
 
 			return mapper.readValue(response, BitFinexOrderStatus.class);
 		} catch (JsonParseException e) {
@@ -262,7 +262,7 @@ public class BitfinexWaoImpl implements BitfinexWao {
 		
 		String path = "/pubticker/"+symbol.toLowerCase();
 		
-		BitFinexTicker ticker = restTemplate.getForObject(PROTOCOL+DOMAIN+path, BitFinexTicker.class) ;
+		BitFinexTicker ticker = restTemplate.getForObject(BITFINEX_PROTOCOL+BITFINEX_DOMAIN+path, BitFinexTicker.class) ;
 		
 		return Double.valueOf(ticker.getAsk());
 	}
@@ -307,7 +307,7 @@ public class BitfinexWaoImpl implements BitfinexWao {
 			Encoder encoder = Base64.getEncoder() ;
 			String payload_base64 = encoder.encodeToString(payload.getBytes());
 
-			String payload_sha384hmac = hmacDigest(payload_base64, secretKey, ALGORITHM_HMACSHA384);
+			String payload_sha384hmac = hmacDigest(payload_base64, secretKey, BITFINEX_ALGORITHM_HMACSHA384);
 
 			conn.setRequestProperty("Content-Type", "application/json");
 			conn.setRequestProperty("Accept", "application/json");

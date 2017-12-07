@@ -9,9 +9,9 @@ import orufeo.iasion.data.dto.CryptoPairDto;
 
 public class HistoryDataWaoImpl implements HistoryDataWao {
 
-	@Setter private RestTemplate restTemplate;
-	@Setter	private ObjectMapper mapper;
-		
+	@Setter	 private ObjectMapper mapper;
+	@Setter  private RestTemplate restTemplate;
+			
 	private static Logger log = Logger.getLogger(HistoryDataWaoImpl.class);
 	
 	@Override
@@ -23,12 +23,8 @@ public class HistoryDataWaoImpl implements HistoryDataWao {
 	@Override
 	public CryptoPairDto getHistoHour(String currency, String quoteCurrency, int aggregate, String exchange) {
 
-		log.error(" getHistoHour");
-		
 		String url = "https://min-api.cryptocompare.com/data/histohour?fsym="+currency.toUpperCase()+"&tsym="+quoteCurrency.toUpperCase()+"&aggregate="+aggregate+"&e="+exchange;
-		
-		log.error(" url="+url);
-		
+				
 		CryptoPairDto dto = null;
 		
 		try {
