@@ -38,52 +38,62 @@
 
 	<bean id="tikaConfig" class="org.apache.tika.config.TikaConfig" />
 
-
-	<bean id="urlShortenerApi" class="com.amano.glcms.app.api.UrlShortenerGooApiImpl"
-		init-method="init">
-		<property name="jsonAuthFile" value="${gapis.jsonauthfile.absolutpath}" />
+	<bean id="authenticateSRV" class="orufeo.iasion.component.AuthenticationSRV" >
+		<property name="userAccountBo" ref="userAccountBO" />
 	</bean>
 
-	<bean id="facebookBO" class="com.amano.glcms.app.bo.FacebookBoImpl">
-		<property name="appId" value="${fb.api.id}" />
-		<property name="appSecret" value="${fb.api.secret}" />
-		<property name="callbackUrl" value="${fb.api.callback.url}" />
-		<property name="facebookFactory" ref="facebookFactory" />
+	<bean id="exchangeSRV" class="orufeo.iasion.component.ExchangeSRV" >
+		<property name="exchangeBo" ref="exchangeBO" />
+		<property name="userAccountBo" ref="userAccountBO" />
+	</bean>
+	
+	<bean id="orchestatorSRV" class="orufeo.iasion.component.OrchestratorSRV" >
+		<property name="ORCHESTRATOR_TOKEN" ref="${iasion.orchestrator.token}" />
+		<property name="macdBo" ref="macdBO" />
+		<property name="userAccountBo" ref="userAccountBO" />
+		<property name="walletBo" ref="walletBO" />
+		<property name="longProcessBean" ref="longProcessBEAN" />
+		<property name="shortProcessBean" ref="shortProcessBEAN" />
+		<property name="priseLongProcessBean" ref="priseLongProcessBEAN" />
+		<property name="priseShortProcessBean" ref="priseShortProcessBEAN" />
+		<property name="clotureLongProcessBean" ref="clotureLongProcessBEAN" />
+		<property name="clotureShortProcessBean" ref="clotureShortProcessBEAN" />
+	</bean>
+	
+	<bean id="orderSRV" class="orufeo.iasion.component.OrderSRV" >
+		<property name="orderBo" ref="orderBO" />
+		<property name="userAccountBo" ref="userAccountBO" />
+	</bean>
+	
+	<bean id="userSRV" class="orufeo.iasion.component.UserSRV" >
+		<property name="userAccountBo" ref="userAccountBO" />
+	</bean>
+	
+	<bean id="walletSRV" class="orufeo.iasion.component.WalletSRV" >
+		<property name="userAccountBo" ref="userAccountBO" />
+		<property name="walletBo" ref="walletBO" />
+	</bean>
+	
+	<bean id="exchangeBO" class="orufeo.iasion.bo.ExchangeBoImpl">
+		<property name="exchangeDao" value="exchangeDAO" />
 	</bean>
 
-	<bean id="facebookFactory" class="facebook4j.FacebookFactory" />
-
-	<bean id="crawlerBO" class="com.amano.glcms.app.bo.CrawlerBoImpl" />
-	<bean id="parserBO" class="com.amano.glcms.app.bo.ArticleParserBoImpl" />
-
-	<bean id="backOfficeSRV" class="com.amano.glcms.app.backoffice.component.BackOfficeSRV" init-method="init">
-		<property name="adminDataBo" ref="adminDataBO" />
-		<property name="adminClientBo" ref="adminClientBO" />
-		<property name="adminSearchBo" ref="adminSearchBO" />
-		<property name="adminUserBo" ref="adminUserBO" />
-		<property name="adminCssBo" ref="adminCssBO" />
-		<property name="adminFileBo" ref="adminFileBO" />
-		<property name="notificationBo" ref="notificationBO" />
-		<property name="adminThemeBo" ref="adminThemeBO" />
-		<property name="adminPaletteBo" ref="adminPaletteBO" />
-		<property name="dataCleansingBo" ref="dataCleansingBO" />
-		<property name="cdnManagerBo" ref="cdnManagerBO" />
-		<property name="generateMailBo" ref="generateMailBO" />
-		<property name="adminProvisioningBo" ref="adminProvisioningBO" />
-		<property name="idLegalFr" value="${legal.fr.mention}" />
-		<property name="idTermsFr" value="${legal.fr.terms}" />
-		<property name="idLegalEn" value="${legal.en.mention}" />
-		<property name="idTermsEn" value="${legal.en.terms}" />
-		<property name="security" value="${amano.security}" />
-		<property name="adminBeaconBo" ref="adminBeaconBO" />
-		<property name="boardWao" ref="boardWAO" />
-		<property name="organizationWao" ref="organizationWAO" />
-		<property name="adsExchangeWao" ref="adsExchangeWAO" />
-		<property name="adBillWao" ref="adBillWAO" />
-		<property name="adminTagsBo" ref="adminTagsBO" />
-		<property name="notificationWao" ref="notificationWAO" />
-		<property name="DUPLICATE_MAXTHREADS" value="${amano.media.bo.duplicate.maxthreads}" />
+	<bean id="macdBO" class="orufeo.iasion.bo.MacdBoImpl">
+		<property name="historyDataWao" value="historyDataWAO" />
 	</bean>
-
-
+	
+	<bean id="orderBO" class="orufeo.iasion.bo.OrderBoImpl">
+		<property name="orderDao" value="orderDAO" />
+	</bean>
+	
+	<bean id="userAccountBO" class="orufeo.iasion.bo.UserAccountBoImpl">
+		<property name="userAccountDao" value="userAccountDAO" />
+	</bean>
+	
+	<bean id="walletBO" class="orufeo.iasion.bo.WalletBoImpl">
+		<property name="userAccountDao" value="userAccountDAO" />
+		<property name="walletHistoryDao" value="walletHistoryDAO" />
+		<property name="userAccountDao" value="userAccountDAO" />
+	</bean>
+	
 </beans>

@@ -13,22 +13,18 @@ import orufeo.iasion.data.objects.analysis.MacdTrigger;
 import orufeo.iasion.data.objects.analysis.MobileAverageData;
 import orufeo.iasion.data.objects.mapping.Ohclv;
 import orufeo.iasion.utils.MathFunctions;
-import orufeo.iasion.utils.MathFunctionsImpl;
 import orufeo.iasion.wao.HistoryDataWao;
 import orufeo.iasion.wao.HistoryDataWaoImpl;
 
 public class MacdBoImpl implements MacdBo {
 
 	@Setter private HistoryDataWao historyDataWao;
-	@Setter private MathFunctions mathFunctions;
-
 
 	@Override
 	public void init() {
 
 		historyDataWao = new HistoryDataWaoImpl();
 		historyDataWao.init();
-		mathFunctions = new MathFunctionsImpl();
 
 	}
 
@@ -186,7 +182,7 @@ public class MacdBoImpl implements MacdBo {
 			if (i==0)
 				amacd.add(macd.get(i));	
 			else
-				amacd.add(mathFunctions.exponentialMobileAverage(macd.get(i), macdSettings.getMACDLength(),amacd.get(i-1)));
+				amacd.add(MathFunctions.exponentialMobileAverage(macd.get(i), macdSettings.getMACDLength(),amacd.get(i-1)));
 
 		}
 
@@ -230,12 +226,12 @@ public class MacdBoImpl implements MacdBo {
 			if (index < length) 
 				ma.getSma().add(0d);
 			else
-				ma.getSma().add(mathFunctions.mean(getInitValues(data, length, index-length)));
+				ma.getSma().add(MathFunctions.mean(getInitValues(data, length, index-length)));
 
 			if (index==0)
 				ma.getEma().add(d.getClose());	
 			else
-				ma.getEma().add(mathFunctions.exponentialMobileAverage(d.getClose(), length, ma.getEma().get(index-1)));
+				ma.getEma().add(MathFunctions.exponentialMobileAverage(d.getClose(), length, ma.getEma().get(index-1)));
 
 			index++;
 		}

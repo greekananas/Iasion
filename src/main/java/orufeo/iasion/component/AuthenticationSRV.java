@@ -14,7 +14,7 @@ public class AuthenticationSRV {
 	
 	private static Logger log = Logger.getLogger(AuthenticationSRV.class);
 	
-	@Setter private UserAccountBo userBo;
+	@Setter private UserAccountBo userAccountBo;
 	
 	public Authentication authenticate(@Payload Map<String, String> args) {
 
@@ -29,9 +29,9 @@ public class AuthenticationSRV {
 
 		try {
 			if (null != login && null != password) {
-				authentication = userBo.authenticate(login, password);
+				authentication = userAccountBo.authenticate(login, password);
 			} else if (null != token) {
-				authentication = userBo.authenticate(token);
+				authentication = userAccountBo.authenticate(token);
 			}
 		} catch (EmptyResultDataAccessException e) {
 			log.error("authenticate: Wrong credentials", e);
