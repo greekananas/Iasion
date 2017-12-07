@@ -1,0 +1,89 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:context="http://www.springframework.org/schema/context" xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd">
+
+	<description>
+		Fichier de configuration spring pour mule
+	</description>
+
+	<bean id="restTemplateBean" class="org.springframework.web.client.RestTemplate">
+		<constructor-arg>
+			<bean
+				class="org.springframework.http.client.SimpleClientHttpRequestFactory">
+				<property name="connectTimeout" value="2000" />
+				<property name="readTimeout" value="2000" />
+			</bean>
+		</constructor-arg>
+		<property name="messageConverters">
+			<list>
+				<bean
+					class="org.springframework.http.converter.StringHttpMessageConverter">
+					<constructor-arg index="0" name="defaultCharset"
+						value="UTF-8" />
+				</bean>
+			</list>
+		</property>
+	</bean>
+
+	<import resource="classpath:bdd-appctx.xml" />
+	<import resource="classpath:jackson-appctx.xml" />
+
+	<!-- ####################################################### -->
+	<!-- METIERS -->
+	<!-- ####################################################### -->
+
+	<bean id="tikaConfig" class="org.apache.tika.config.TikaConfig" />
+
+
+	<bean id="urlShortenerApi" class="com.amano.glcms.app.api.UrlShortenerGooApiImpl"
+		init-method="init">
+		<property name="jsonAuthFile" value="${gapis.jsonauthfile.absolutpath}" />
+	</bean>
+
+	<bean id="facebookBO" class="com.amano.glcms.app.bo.FacebookBoImpl">
+		<property name="appId" value="${fb.api.id}" />
+		<property name="appSecret" value="${fb.api.secret}" />
+		<property name="callbackUrl" value="${fb.api.callback.url}" />
+		<property name="facebookFactory" ref="facebookFactory" />
+	</bean>
+
+	<bean id="facebookFactory" class="facebook4j.FacebookFactory" />
+
+	<bean id="crawlerBO" class="com.amano.glcms.app.bo.CrawlerBoImpl" />
+	<bean id="parserBO" class="com.amano.glcms.app.bo.ArticleParserBoImpl" />
+
+	<bean id="backOfficeSRV" class="com.amano.glcms.app.backoffice.component.BackOfficeSRV" init-method="init">
+		<property name="adminDataBo" ref="adminDataBO" />
+		<property name="adminClientBo" ref="adminClientBO" />
+		<property name="adminSearchBo" ref="adminSearchBO" />
+		<property name="adminUserBo" ref="adminUserBO" />
+		<property name="adminCssBo" ref="adminCssBO" />
+		<property name="adminFileBo" ref="adminFileBO" />
+		<property name="notificationBo" ref="notificationBO" />
+		<property name="adminThemeBo" ref="adminThemeBO" />
+		<property name="adminPaletteBo" ref="adminPaletteBO" />
+		<property name="dataCleansingBo" ref="dataCleansingBO" />
+		<property name="cdnManagerBo" ref="cdnManagerBO" />
+		<property name="generateMailBo" ref="generateMailBO" />
+		<property name="adminProvisioningBo" ref="adminProvisioningBO" />
+		<property name="idLegalFr" value="${legal.fr.mention}" />
+		<property name="idTermsFr" value="${legal.fr.terms}" />
+		<property name="idLegalEn" value="${legal.en.mention}" />
+		<property name="idTermsEn" value="${legal.en.terms}" />
+		<property name="security" value="${amano.security}" />
+		<property name="adminBeaconBo" ref="adminBeaconBO" />
+		<property name="boardWao" ref="boardWAO" />
+		<property name="organizationWao" ref="organizationWAO" />
+		<property name="adsExchangeWao" ref="adsExchangeWAO" />
+		<property name="adBillWao" ref="adBillWAO" />
+		<property name="adminTagsBo" ref="adminTagsBO" />
+		<property name="notificationWao" ref="notificationWAO" />
+		<property name="DUPLICATE_MAXTHREADS" value="${amano.media.bo.duplicate.maxthreads}" />
+	</bean>
+
+
+</beans>
