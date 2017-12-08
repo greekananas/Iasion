@@ -96,4 +96,21 @@
 		<property name="userAccountDao" value="userAccountDAO" />
 	</bean>
 	
+	<bean id="longProcessBean" class="orufeo.iasion.bean.LongProcessBeanImpl">
+		<property name="exchangeBo" value="exchangeBO" />
+		<property name="userAccountBo" value="userAccountBO" />
+		<property name="walletBo" value="walletBO" />
+		<property name="bitfinexWao" value="bitfinexWAO" />		
+		<property name="BITFINEX_CODE" value="${iasion.process.bitfinex.code}" />
+		<property name="ORDERCLOSE_MAXTRY" value="${iasion.process.bitfinex.orderclose.maxtry}" />
+		<property name="ORDERCLOSE_WAITINGTIME" value="${iasion.process.bitfinex.orderclose.waitingtime}" />
+		<property name="ORDERSTATUS_MAXTRY" value="${iasion.process.bitfinex.orderstatus.maxtry}" />
+		<property name="ORDERSTATUS_WAITINGTIME" value="${iasion.process.bitfinex.orderstatus.waitingtime}" />
+		<property name="TRANSFER_MAXTRY" value="${iasion.process.bitfinex.transfer.maxtry}" />
+		<property name="TRANSFER_WAITINGTIME" value="${iasion.process.bitfinex.transfer.waitingtime}" />
+		<property name="ORDERBUY_MAXTRY" value="${iasion.process.bitfinex.orderbuy.maxtry}" />
+		<property name="ORDERBUY_WAITINGTIME" value="${iasion.process.bitfinex.orderbuy.waitingtime}" />
+		<property name="ORDERBUY_THRESHOLD" value="${iasion.process.bitfinex.orderbuy.threshold}" />		
+	</bean>
+	
 </beans>
