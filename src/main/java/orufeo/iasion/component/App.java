@@ -23,8 +23,8 @@ public class App {
 		
 		macdBo.init();
 		
-		MacdTrend matrixTrend = macdBo.analyzeTrend("BTC", "USD", aggregateBig, "Kraken", macdSettings);
-		MacdTrigger matrixTrigger = macdBo.analyzeTrigger("BTC", "USD", aggregateSmall, "Kraken", macdSettings, matrixTrend);
+		MacdTrend matrixTrend = macdBo.analyzeTrend("BTC", "USD", aggregateBig, "bitfinex", macdSettings);
+		MacdTrigger matrixTrigger = macdBo.analyzeTrigger("BTC", "USD", aggregateSmall, "bitfinex", macdSettings, matrixTrend);
 		
 		
 	}

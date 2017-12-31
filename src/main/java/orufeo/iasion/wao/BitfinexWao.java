@@ -5,6 +5,7 @@ import java.util.List;
 import orufeo.iasion.data.dto.BitFinexBalanceStatus;
 import orufeo.iasion.data.dto.BitFinexOrderStatus;
 import orufeo.iasion.data.dto.BitFinexPosition;
+import orufeo.iasion.data.dto.BitFinexTicker;
 import orufeo.iasion.data.dto.BitFinexTransferStatus;
 import orufeo.iasion.exception.ActivePositionsException;
 import orufeo.iasion.exception.BalancesException;
@@ -12,6 +13,7 @@ import orufeo.iasion.exception.BuyException;
 import orufeo.iasion.exception.CancelOrderException;
 import orufeo.iasion.exception.ClosePositionException;
 import orufeo.iasion.exception.OrderStatusException;
+import orufeo.iasion.exception.SellException;
 import orufeo.iasion.exception.TransferException;
 
 public interface BitfinexWao {
@@ -30,6 +32,8 @@ public interface BitfinexWao {
 	
 	BitFinexOrderStatus buy(String symbol, String amount, String price, String type, String apiKey, String secretKey) throws BuyException;
 	
-	Double getTicker(String symbol);
+	BitFinexOrderStatus sell(String symbol, String amount, String price, String type, String apiKey, String secretKey) throws SellException;
+	
+	BitFinexTicker getTicker(String symbol);
 	
 }

@@ -39,6 +39,7 @@ import orufeo.iasion.exception.BuyException;
 import orufeo.iasion.exception.CancelOrderException;
 import orufeo.iasion.exception.ClosePositionException;
 import orufeo.iasion.exception.OrderStatusException;
+import orufeo.iasion.exception.SellException;
 import orufeo.iasion.exception.TransferException;
 
 
@@ -258,13 +259,50 @@ public class BitfinexWaoImpl implements BitfinexWao {
 	}
 
 	@Override
-	public Double getTicker(String symbol) {
-		
+	public BitFinexOrderStatus sell(String symbol, String amount, String price, String type, String apiKey, String secretKey) throws SellException {
+
+		long nonce = System.currentTimeMillis();
+		String path = "/v1/order/new";
+
+		//PAYLOAD CONSTRUCTION
+		JSONObject jo = new JSONObject();
+		jo.put("request", path);
+		jo.put("nonce", Long.toString(nonce));
+		jo.put("symbol", symbol.toUpperCase());
+		jo.put("amount", amount); 
+		jo.put("price",  price); 
+		jo.put("exchange", "bitfinex");
+		jo.put("side", "sell");
+		jo.put("type",  type); 
+		jo.put("ocoorder" , false); 
+		jo.put("buy_price_oco","0"); 
+		jo.put("sell_price_oco", "0"); 
+
+		String payload = jo.toString();
+		try {
+			String response = httpCallBitFinex(BITFINEX_PROTOCOL, BITFINEX_DOMAIN, path, "POST", apiKey, secretKey, payload);
+
+			return mapper.readValue(response, BitFinexOrderStatus.class);
+		} catch (JsonParseException e) {
+			throw new SellException("JsonParseException: "+e.getMessage());
+		} catch (JsonMappingException e) {
+			throw new SellException("JsonMappingException: "+e.getMessage());
+		} catch (IOException e) {
+			throw new SellException("IOException: "+e.getMessage());
+		}
+
+	}
+
+	@Override
+	public BitFinexTicker getTicker(String symbol) {
+
 		String path = "/pubticker/"+symbol.toLowerCase();
-		
+
 		BitFinexTicker ticker = restTemplate.getForObject(BITFINEX_PROTOCOL+BITFINEX_DOMAIN+path, BitFinexTicker.class) ;
+
+		//return Double.valueOf(ticker.getAsk());
 		
-		return Double.valueOf(ticker.getAsk());
+		return ticker;
 	}
 
 

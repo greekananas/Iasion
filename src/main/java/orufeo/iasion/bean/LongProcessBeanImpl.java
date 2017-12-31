@@ -109,7 +109,7 @@ public class LongProcessBeanImpl implements LongProcessBean {
 					if (amountTransfered != availableEquity ) 
 						throw new EquityCheckException("Equity on exchange wallet is not equal to what we just transfered from trading wallet");
 
-					Double price = bitfinexWao.getTicker(iasionSymbol);
+					Double price = Double.valueOf(bitfinexWao.getTicker(iasionSymbol).getAsk());
 
 					BitFinexOrderStatus buyOrder = buyOrder(iasionSymbol, Double.toString(wallet.getData().getCurrencyValue()/price), "0", "exchange market", apiKey, secretKey, 0); 
 
@@ -198,35 +198,45 @@ public class LongProcessBeanImpl implements LongProcessBean {
 
 	private Double proceedTransfer(Wallet wallet, UserAccount user, Long orderId, String apiKey, String secretKey) throws TransferException, InterruptedException, IOException {
 
+		Boolean transfered = false;
+		Boolean checked = false; 
+		
 		List<BitFinexTransferStatus> statusTransfer = null;
-		
+
 		// we loop until it is done
-		
+
 		for ( int i=0; i < TRANSFER_MAXTRY ; i++) {
-		
+
 			Thread.sleep(TRANSFER_WAITINGTIME);
-			
-			statusTransfer = bitfinexWao.transfer("trading", "exchange", wallet.getData().getQuoteCurrencyLabel().toLowerCase(), wallet.getData().getQuoteCurrencyValue(), apiKey, secretKey);
-			
-			if ("error".equals(statusTransfer.get(0).getStatus().toLowerCase())) {
-				sendMail(user, orderId, "TRANSFER_FUND", "Transfer order between your wallets during the long process with BitFinex returned an error, following the close order ID:"+orderId+". Try number: "+i);
-			} else { //success	
-				try { 
-					for (BitFinexBalanceStatus balance : bitfinexWao.getBalances(apiKey, secretKey) ) {
-						if ( "exchange".equals(balance.getType()) && balance.getCurrencyLabel().equals(wallet.getData().getQuoteCurrencyLabel().toLowerCase())) {
-							return Double.valueOf(balance.getAvailable());
+			try {
+				statusTransfer = bitfinexWao.transfer("trading", "exchange", wallet.getData().getQuoteCurrencyLabel().toLowerCase(), wallet.getData().getQuoteCurrencyValue(), apiKey, secretKey);
+
+				if ("error".equals(statusTransfer.get(0).getStatus().toLowerCase())) {
+					sendMail(user, orderId, "TRANSFER_FUND", "Transfer order between your wallets during the long process with BitFinex returned an error, following the close order ID:"+orderId+". Try number: "+i);
+				} else { //success	
+
+					transfered = true;
+					
+					for ( int j=0; j < TRANSFER_MAXTRY ; j++) {
+						try { 
+							for (BitFinexBalanceStatus balance : bitfinexWao.getBalances(apiKey, secretKey) ) {
+								if ( "exchange".equals(balance.getType()) && balance.getCurrencyLabel().equals(wallet.getData().getQuoteCurrencyLabel().toLowerCase())) {
+									return Double.valueOf(balance.getAvailable());
+								}
+							}
+						} catch (BalancesException e) {
+							sendMail(user, orderId, "TRANSFER_FUND", "Impossible to check transfered value in exchange wallet, following the close order ID:"+orderId+". Try number: "+j);
 						}
 					}
-				} catch (BalancesException e) {
-					sendMail(user, orderId, "TRANSFER_FUND", "Impossible to check transfered value in exchange wallet, following the close order ID:"+orderId+". Try number: "+i);
-				}	
-			}
-			
-		}
+				}
 
+			} catch (TransferException e) {
+				log.error("Impossible to transfer currency from margin to exchange for user "+user.getData().getFirstname()+" "+user.getData().getLastname()+"   try #"+i);
+			}
+		}
 		//if here the transfer + check was not completed
-		sendMail(user, orderId, "TRANSFER_FUND", "Transfer order between your wallets during the long process, following the close order ID:"+orderId+". Exhausted number of retries");
-		throw new TransferException("Impossible to transfer + check transfered value in exchange wallet");
+		sendMail(user, orderId, "TRANSFER_FUND", "Transfer order between your wallets during the long process, following the close order ID:"+orderId+". Exhausted number of retries . Transfer status: "+transfered+", check status:"+checked);
+		throw new TransferException("Transfer status: "+transfered+" check status: "+ checked+" during transfer ");
 
 	}
 
