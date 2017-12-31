@@ -39,7 +39,7 @@ public class ShortProcessBeanImpl implements ShortProcessBean {
 	@Setter private Integer ORDERSTATUS_WAITINGTIME;    // 500 ms
 	@Setter private Integer TRANSFER_MAXTRY; 			// 500
 	@Setter private Integer TRANSFER_WAITINGTIME;   	// 500 ms
-	@Setter private Double LEVER;   					// 1.0
+	@Setter private Double BITFINEX_LEVER;   					// 1.0
 
 	private static Logger log = Logger.getLogger(ShortProcessBeanImpl.class);
 
@@ -184,7 +184,7 @@ public class ShortProcessBeanImpl implements ShortProcessBean {
 					
 					Double bid = Double.valueOf(bitfinexWao.getTicker(iasionSymbol).getBid());
 					
-					BitFinexOrderStatus sellOrderStatus2 = sellOrder(iasionSymbol, Double.toString(updatedQuoteCurrencyValue*LEVER/bid), "0", "market", apiKey, secretKey, 0);
+					BitFinexOrderStatus sellOrderStatus2 = sellOrder(iasionSymbol, Double.toString(updatedQuoteCurrencyValue*BITFINEX_LEVER/bid), "0", "market", apiKey, secretKey, 0);
 					
 					//We loop on the order status, to ensure it is complete
 					sellOrderStatus2 = loopCheckStatus(sellOrderStatus2, apiKey, secretKey, 0);

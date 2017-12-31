@@ -48,7 +48,7 @@
 	</bean>
 	
 	<bean id="orchestatorSRV" class="orufeo.iasion.component.OrchestratorSRV" >
-		<property name="ORCHESTRATOR_TOKEN" ref="${iasion.orchestrator.token}" />
+		<property name="ORCHESTRATOR_TOKEN" value="${iasion.orchestrator.token}" />
 		<property name="macdBo" ref="macdBO" />
 		<property name="userAccountBo" ref="userAccountBO" />
 		<property name="walletBo" ref="walletBO" />
@@ -75,32 +75,32 @@
 	</bean>
 	
 	<bean id="exchangeBO" class="orufeo.iasion.bo.ExchangeBoImpl">
-		<property name="exchangeDao" value="exchangeDAO" />
+		<property name="exchangeDao" ref="exchangeDAO" />
 	</bean>
 
 	<bean id="macdBO" class="orufeo.iasion.bo.MacdBoImpl">
-		<property name="historyDataWao" value="historyDataWAO" />
+		<property name="historyDataWao" ref="historyDataWAO" />
 	</bean>
 	
 	<bean id="orderBO" class="orufeo.iasion.bo.OrderBoImpl">
-		<property name="orderDao" value="orderDAO" />
+		<property name="orderDao" ref="orderDAO" />
 	</bean>
 	
 	<bean id="userAccountBO" class="orufeo.iasion.bo.UserAccountBoImpl">
-		<property name="userAccountDao" value="userAccountDAO" />
+		<property name="userAccountDao" ref="userAccountDAO" />
 	</bean>
 	
 	<bean id="walletBO" class="orufeo.iasion.bo.WalletBoImpl">
-		<property name="userAccountDao" value="userAccountDAO" />
-		<property name="walletHistoryDao" value="walletHistoryDAO" />
-		<property name="userAccountDao" value="userAccountDAO" />
+		<property name="userAccountDao" ref="userAccountDAO" />
+		<property name="walletHistoryDao" ref="walletHistoryDAO" />
+		<property name="userAccountDao" ref="userAccountDAO" />
 	</bean>
 	
-	<bean id="longProcessBean" class="orufeo.iasion.bean.LongProcessBeanImpl">
-		<property name="exchangeBo" value="exchangeBO" />
-		<property name="userAccountBo" value="userAccountBO" />
-		<property name="walletBo" value="walletBO" />
-		<property name="bitfinexWao" value="bitfinexWAO" />		
+	<bean id="longProcessBEAN" class="orufeo.iasion.bean.LongProcessBeanImpl">
+		<property name="exchangeBo" ref="exchangeBO" />
+		<property name="userAccountBo" ref="userAccountBO" />
+		<property name="walletBo" ref="walletBO" />
+		<property name="bitfinexWao" ref="bitfinexWAO" />		
 		<property name="BITFINEX_CODE" value="${iasion.process.bitfinex.code}" />
 		<property name="ORDERCLOSE_MAXTRY" value="${iasion.process.bitfinex.orderclose.maxtry}" />
 		<property name="ORDERCLOSE_WAITINGTIME" value="${iasion.process.bitfinex.orderclose.waitingtime}" />
@@ -112,5 +112,21 @@
 		<property name="ORDERBUY_WAITINGTIME" value="${iasion.process.bitfinex.orderbuy.waitingtime}" />
 		<property name="ORDERBUY_THRESHOLD" value="${iasion.process.bitfinex.orderbuy.threshold}" />		
 	</bean>
+	
+	<bean id="shortProcessBEAN" class="orufeo.iasion.bean.ShortProcessBeanImpl">
+		<property name="exchangeBo" ref="exchangeBO" />
+		<property name="userAccountBo" ref="userAccountBO" />
+		<property name="walletBo" ref="walletBO" />
+		<property name="bitfinexWao" ref="bitfinexWAO" />		
+		<property name="BITFINEX_CODE" value="${iasion.process.bitfinex.code}" />
+		<property name="ORDERSELL_MAXTRY" value="${iasion.process.bitfinex.orderclose.maxtry}" />
+		<property name="ORDERSELL_WAITINGTIME" value="${iasion.process.bitfinex.orderclose.waitingtime}" />
+		<property name="ORDERSTATUS_MAXTRY" value="${iasion.process.bitfinex.orderstatus.maxtry}" />
+		<property name="ORDERSTATUS_WAITINGTIME" value="${iasion.process.bitfinex.orderstatus.waitingtime}" />
+		<property name="TRANSFER_MAXTRY" value="${iasion.process.bitfinex.transfer.maxtry}" />
+		<property name="TRANSFER_WAITINGTIME" value="${iasion.process.bitfinex.transfer.waitingtime}" />
+		<property name="BITFINEX_LEVER" value="${iasion.process.bitfinex.lever}" />		
+	</bean>
+	
 	
 </beans>
