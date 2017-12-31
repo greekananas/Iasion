@@ -135,11 +135,11 @@ public class BitfinexWaoImpl implements BitfinexWao {
 
 			return mapper.readValue(response, BitFinexOrderStatus.class);
 		} catch (JsonParseException e) {
-			throw new OrderStatusException("JsonParseException: "+e.getMessage());
+			throw new OrderStatusException("JsonParseException: "+e.getMessage(),Long.toString(orderId) );
 		} catch (JsonMappingException e) {
-			throw new OrderStatusException("JsonMappingException: "+e.getMessage());
+			throw new OrderStatusException("JsonMappingException: "+e.getMessage(), Long.toString(orderId));
 		} catch (IOException e) {
-			throw new OrderStatusException("IOException: "+e.getMessage());
+			throw new OrderStatusException("IOException: "+e.getMessage(), Long.toString(orderId));
 		}
 	}
 

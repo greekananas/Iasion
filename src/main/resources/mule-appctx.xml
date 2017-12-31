@@ -119,8 +119,8 @@
 		<property name="walletBo" ref="walletBO" />
 		<property name="bitfinexWao" ref="bitfinexWAO" />		
 		<property name="BITFINEX_CODE" value="${iasion.process.bitfinex.code}" />
-		<property name="ORDERSELL_MAXTRY" value="${iasion.process.bitfinex.orderclose.maxtry}" />
-		<property name="ORDERSELL_WAITINGTIME" value="${iasion.process.bitfinex.orderclose.waitingtime}" />
+		<property name="ORDERSELL_MAXTRY" value="${iasion.process.bitfinex.ordersell.maxtry}" />
+		<property name="ORDERSELL_WAITINGTIME" value="${iasion.process.bitfinex.ordersell.waitingtime}" />
 		<property name="ORDERSTATUS_MAXTRY" value="${iasion.process.bitfinex.orderstatus.maxtry}" />
 		<property name="ORDERSTATUS_WAITINGTIME" value="${iasion.process.bitfinex.orderstatus.waitingtime}" />
 		<property name="TRANSFER_MAXTRY" value="${iasion.process.bitfinex.transfer.maxtry}" />
@@ -128,5 +128,56 @@
 		<property name="BITFINEX_LEVER" value="${iasion.process.bitfinex.lever}" />		
 	</bean>
 	
+	<bean id="clotureLongProcessBEAN" class="orufeo.iasion.bean.ClotureLongProcessBeanImpl">
+		<property name="exchangeBo" ref="exchangeBO" />
+		<property name="userAccountBo" ref="userAccountBO" />
+		<property name="walletBo" ref="walletBO" />
+		<property name="bitfinexWao" ref="bitfinexWAO" />		
+		<property name="BITFINEX_CODE" value="${iasion.process.bitfinex.code}" />
+		<property name="ORDERSELL_MAXTRY" value="${iasion.process.bitfinex.ordersell.maxtry}" />
+		<property name="ORDERSELL_WAITINGTIME" value="${iasion.process.bitfinex.ordersell.waitingtime}" />
+		<property name="ORDERSTATUS_MAXTRY" value="${iasion.process.bitfinex.orderstatus.maxtry}" />
+		<property name="ORDERSTATUS_WAITINGTIME" value="${iasion.process.bitfinex.orderstatus.waitingtime}" />
+		<property name="TRANSFER_MAXTRY" value="${iasion.process.bitfinex.transfer.maxtry}" />
+		<property name="TRANSFER_WAITINGTIME" value="${iasion.process.bitfinex.transfer.waitingtime}" />
+	</bean>
 	
+	<bean id="clotureShortProcessBEAN" class="orufeo.iasion.bean.ClotureShortProcessBeanImpl">
+		<property name="exchangeBo" ref="exchangeBO" />
+		<property name="userAccountBo" ref="userAccountBO" />
+		<property name="walletBo" ref="walletBO" />
+		<property name="bitfinexWao" ref="bitfinexWAO" />		
+		<property name="BITFINEX_CODE" value="${iasion.process.bitfinex.code}" />
+		<property name="ORDERCLOSE_MAXTRY" value="${iasion.process.bitfinex.orderclose.maxtry}" />
+		<property name="ORDERCLOSE_WAITINGTIME" value="${iasion.process.bitfinex.orderclose.waitingtime}" />
+		<property name="ORDERSTATUS_MAXTRY" value="${iasion.process.bitfinex.orderstatus.maxtry}" />
+		<property name="ORDERSTATUS_WAITINGTIME" value="${iasion.process.bitfinex.orderstatus.waitingtime}" />
+	</bean>
+	
+	<bean id="priseLongProcessBEAN" class="orufeo.iasion.bean.PriseLongProcessBeanImpl">
+		<property name="exchangeBo" ref="exchangeBO" />
+		<property name="userAccountBo" ref="userAccountBO" />
+		<property name="walletBo" ref="walletBO" />
+		<property name="bitfinexWao" ref="bitfinexWAO" />		
+		<property name="BITFINEX_CODE" value="${iasion.process.bitfinex.code}" />
+		<property name="ORDERBUY_MAXTRY" value="${iasion.process.bitfinex.orderbuy.maxtry}" />
+		<property name="ORDERBUY_WAITINGTIME" value="${iasion.process.bitfinex.orderbuy.waitingtime}" />
+		<property name="ORDERBUY_THRESHOLD" value="${iasion.process.bitfinex.orderbuy.threshold}" />		
+		<property name="ORDERSTATUS_MAXTRY" value="${iasion.process.bitfinex.orderstatus.maxtry}" />
+		<property name="ORDERSTATUS_WAITINGTIME" value="${iasion.process.bitfinex.orderstatus.waitingtime}" />
+	</bean>
+	
+	<bean id="priseShortProcessBEAN" class="orufeo.iasion.bean.PriseShortProcessBeanImpl">
+		<property name="exchangeBo" ref="exchangeBO" />
+		<property name="userAccountBo" ref="userAccountBO" />
+		<property name="walletBo" ref="walletBO" />
+		<property name="bitfinexWao" ref="bitfinexWAO" />		
+		<property name="BITFINEX_CODE" value="${iasion.process.bitfinex.code}" />
+		<property name="ORDERSELL_MAXTRY" value="${iasion.process.bitfinex.ordersell.maxtry}" />
+		<property name="ORDERSELL_WAITINGTIME" value="${iasion.process.bitfinex.ordersell.waitingtime}" />
+		<property name="ORDERSTATUS_MAXTRY" value="${iasion.process.bitfinex.orderstatus.maxtry}" />
+		<property name="ORDERSTATUS_WAITINGTIME" value="${iasion.process.bitfinex.orderstatus.waitingtime}" />
+		<property name="BITFINEX_LEVER" value="${iasion.process.bitfinex.lever}" />	
+	</bean>
+		
 </beans>

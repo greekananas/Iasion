@@ -111,10 +111,6 @@ public class LongProcessBeanImpl implements LongProcessBean {
 
 					Double price = Double.valueOf(bitfinexWao.getTicker(iasionSymbol).getAsk());
 
-					BitFinexOrderStatus buyOrder = buyOrder(iasionSymbol, Double.toString(wallet.getData().getCurrencyValue()/price), "0", "exchange market", apiKey, secretKey, 0); 
-
-					orderId = buyOrder.getOrder_id();
-
 					orderId = proceedBuyOrder(user, wallet, iasionSymbol, price,  apiKey, secretKey);
 
 					//we store the wallet in Iasion
@@ -286,6 +282,7 @@ public class LongProcessBeanImpl implements LongProcessBean {
 	}
 
 	private Long proceedBuyOrder(UserAccount user, Wallet wallet, String iasionSymbol, Double price,  String apiKey, String secretKey) throws InterruptedException, BuyException, OrderStatusException, MaxTriesExceededException, IOException {
+		
 		BitFinexOrderStatus buyOrder = buyOrder(iasionSymbol, Double.toString(wallet.getData().getCurrencyValue()/price), "0", "exchange market", apiKey, secretKey, 0); 
 
 		Long orderId = buyOrder.getOrder_id();

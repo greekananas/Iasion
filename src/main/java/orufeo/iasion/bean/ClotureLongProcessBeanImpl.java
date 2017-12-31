@@ -1,7 +1,6 @@
 package orufeo.iasion.bean;
 
 import java.io.IOException;
-import java.util.List;
 
 import org.apache.log4j.Logger;
 
@@ -11,21 +10,18 @@ import orufeo.iasion.bo.UserAccountBo;
 import orufeo.iasion.bo.WalletBo;
 import orufeo.iasion.data.dto.BitFinexBalanceStatus;
 import orufeo.iasion.data.dto.BitFinexOrderStatus;
-import orufeo.iasion.data.dto.BitFinexTransferStatus;
 import orufeo.iasion.data.mail.MailMessagePojo;
 import orufeo.iasion.data.objects.storage.Exchange;
 import orufeo.iasion.data.objects.storage.UserAccount;
 import orufeo.iasion.data.objects.storage.Wallet;
 import orufeo.iasion.exception.BalancesException;
-import orufeo.iasion.exception.EquityCheckException;
 import orufeo.iasion.exception.MaxTriesExceededException;
 import orufeo.iasion.exception.OrderStatusException;
 import orufeo.iasion.exception.SellException;
-import orufeo.iasion.exception.TransferException;
 import orufeo.iasion.utils.Mailer;
 import orufeo.iasion.wao.BitfinexWao;
 
-public class ShortProcessBeanImpl implements ShortProcessBean {
+public class ClotureLongProcessBeanImpl implements ClotureLongProcessBean {
 
 	@Setter private ExchangeBo exchangeBo;
 	@Setter private UserAccountBo userAccountBo;
@@ -39,9 +35,8 @@ public class ShortProcessBeanImpl implements ShortProcessBean {
 	@Setter private Integer ORDERSTATUS_WAITINGTIME;    // 500 ms
 	@Setter private Integer TRANSFER_MAXTRY; 			// 500
 	@Setter private Integer TRANSFER_WAITINGTIME;   	// 500 ms
-	@Setter private Double BITFINEX_LEVER;   					// 1.0
 
-	private static Logger log = Logger.getLogger(ShortProcessBeanImpl.class);
+	private static Logger log = Logger.getLogger(ClotureLongProcessBeanImpl.class);
 
 
 	@Override
@@ -51,9 +46,9 @@ public class ShortProcessBeanImpl implements ShortProcessBean {
 
 		if (BITFINEX_CODE.toLowerCase().equals(exchange.getData().getCode().toLowerCase())) { 
 			try {
-				shortProcessBitfinex(wallet);
+				clotureLongProcessBitfinex(wallet);
 			} catch (Exception e ) {
-				log.error("shortProcess for BitFinex Error: ", e);
+				log.error("clotureLongProcess for BitFinex Error: ", e);
 			}
 		}
 
@@ -106,7 +101,7 @@ public class ShortProcessBeanImpl implements ShortProcessBean {
 	}
 
 
-	private void shortProcessBitfinex(Wallet wallet) throws IOException, InterruptedException {
+	private void clotureLongProcessBitfinex(Wallet wallet) throws IOException, InterruptedException {
 
 		UserAccount user = userAccountBo.get(wallet.getData().getUserGuid());
 		String iasionSymbol = wallet.getData().getCurrencyLabel().toLowerCase()+wallet.getData().getQuoteCurrencyLabel().toLowerCase();
@@ -149,31 +144,6 @@ public class ShortProcessBeanImpl implements ShortProcessBean {
 					wallet.getData().setCurrencyValue(updatedCurrencyValue);
 
 					walletBo.update(wallet, Long.toString(orderId));
-
-					//move from Exchange wallet to margin wallet
-					Double amountTransfered = proceedTransfer(wallet, user, orderId, apiKey, secretKey);
-
-					//check the equity on the exchange wallet
-					Double availableEquity = getAvailableEquity(wallet, user, orderId, apiKey, secretKey);
-
-					if (amountTransfered != availableEquity ) 
-						throw new EquityCheckException("Equity on exchange wallet is not equal to what we just transfered from exchange wallet");
-					
-					Double bid = Double.valueOf(bitfinexWao.getTicker(iasionSymbol).getBid());
-					
-					BitFinexOrderStatus sellOrderStatus2 = sellOrder(iasionSymbol, Double.toString(updatedQuoteCurrencyValue*BITFINEX_LEVER/bid), "0", "market", apiKey, secretKey, 0);
-					
-					//We loop on the order status, to ensure it is complete
-					sellOrderStatus2 = loopCheckStatus(sellOrderStatus2, apiKey, secretKey, 0);
-					
-					//we store the final numeric data
-					Double executed2 = Double.valueOf(sellOrderStatus2.getExecuted_amount());
-					Double avgExecutionPrice2 = Double.valueOf(sellOrderStatus2.getAvg_execution_price());
-
-					wallet.getData().setQuoteCurrencyValue(wallet.getData().getQuoteCurrencyValue()+(avgExecutionPrice2*executed2));
-					wallet.getData().setCurrencyValue(wallet.getData().getCurrencyValue()-executed2); 									//currencyValue should be 0
-					
-					walletBo.update(wallet);
 					
 				} //else we do nothing
 
@@ -190,90 +160,13 @@ public class ShortProcessBeanImpl implements ShortProcessBean {
 			} catch (OrderStatusException e) {
 				log.error("Impossible to get your sell order status for order "+orderId+": "+e);	
 				sendMail(user, orderId, "CONNECTION_PROBLEM ?", "Impossible to check the status of a sell order (probably a connection problem) during the long process with BitFinex.");
-			} catch (EquityCheckException e) {
-				log.error("Check failed between Margin wallet equity value and transfered value from exchange wallet after sell order "+orderId+": "+e);	
-				sendMail(user, orderId, "EQUITY_CHECK", "Check failed between Margin wallet equity value and transfered value from exchange wallet after sell order "+orderId+"");
-			}  catch (TransferException e) {
-				log.error("Impossible to transfer currency for user "+user.getData().getFirstname()+" "+user.getData().getLastname()+": "+e.getMessage());
-				sendMail(user, orderId, "TRANSFER_FUND", "Impossible to transfer money from wallet to wallet during the short process with BitFinex, after the short order ID "+orderId);
 			} 
 
 		}
 
-
 	}
 
-	private Double getAvailableEquity(Wallet wallet, UserAccount user, Long orderId, String apiKey, String secretKey) throws BalancesException, IOException {
-
-		List<BitFinexBalanceStatus> statusBalances = bitfinexWao.getBalances(apiKey, secretKey);
-
-		Double availableEquity = null;
-
-		for (BitFinexBalanceStatus balance : statusBalances) {
-
-			if ("trading".equals(balance.getType()) 
-					&& balance.getCurrencyLabel().toLowerCase().equals(wallet.getData().getQuoteCurrencyLabel().toLowerCase())
-					&& Double.valueOf(balance.getAvailable())>= wallet.getData().getQuoteCurrencyValue()
-					) {
-				availableEquity = Double.valueOf(balance.getAvailable());
-			} 
-		}
-
-		if (null == availableEquity) {
-			sendMail(user, orderId, "TRANSFER_FUND", "After transfer, balance value is not available in the targeted wallet following the sell order ID: "+orderId);
-			throw new BalancesException("Balance not available");
-		}
-
-		return availableEquity;
-	}
-	
-	
-	private Double proceedTransfer(Wallet wallet, UserAccount user, Long orderId, String apiKey, String secretKey) throws TransferException, InterruptedException, IOException {
-
-		List<BitFinexTransferStatus> statusTransfer = null;
-
-		Boolean transfered = false;
-		Boolean checked = false; 
 		
-		// we loop until it is done
-		for ( int i=0; i < TRANSFER_MAXTRY ; i++) {
-
-			Thread.sleep(TRANSFER_WAITINGTIME);
-			try {
-				statusTransfer = bitfinexWao.transfer("exchange", "trading", wallet.getData().getQuoteCurrencyLabel().toLowerCase(), wallet.getData().getQuoteCurrencyValue(), apiKey, secretKey);
-
-				if ("error".equals(statusTransfer.get(0).getStatus().toLowerCase())) {
-					sendMail(user, orderId, "TRANSFER_FUND", "Transfer order between your wallets during the long process with BitFinex returned an error, following the close order ID:"+orderId+". Try number: "+i);
-				} else { //success
-
-					transfered = true;
-						
-					//we loop the check process
-					for ( int j=0; j < TRANSFER_MAXTRY ; j++) {
-						try { 
-							for (BitFinexBalanceStatus balance : bitfinexWao.getBalances(apiKey, secretKey) ) {
-								if ( "trading".equals(balance.getType()) && balance.getCurrencyLabel().equals(wallet.getData().getQuoteCurrencyLabel().toLowerCase())) {
-									return Double.valueOf(balance.getAvailable());
-								}
-							}
-						} catch (BalancesException e) {
-							sendMail(user, orderId, "TRANSFER_FUND", "Impossible to check transfered value in margin wallet, following the close order ID:"+orderId+". Try number: "+j);
-						}	
-					}
-				}
-
-			} catch (TransferException e) {
-				log.error("Impossible to transfer currency from exchange to margin for user "+user.getData().getFirstname()+" "+user.getData().getLastname()+"   try #"+i);
-			}
-
-		}
-
-		//if here the transfer + check was not completed
-		sendMail(user, orderId, "TRANSFER_FUND", "Transfer order between your wallets during the short process, following the close order ID:"+orderId+". Exhausted number of retries. Transfer status: "+transfered+", check status:"+checked);
-		throw new TransferException("Transfer status: "+transfered+" check status: "+ checked+" during transfer ");
-
-	}
-
 	private Double checkBalanceForCurrency(UserAccount account, String currencyLabel, String apiKey, String secretKey) throws BalancesException, IOException {
 
 		for (BitFinexBalanceStatus balance : bitfinexWao.getBalances(apiKey, secretKey) ) {
