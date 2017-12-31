@@ -159,11 +159,10 @@ public class LongProcessBeanImpl implements LongProcessBean {
 		//check the execution of the order 
 		BitFinexOrderStatus statusClose = bitfinexWao.orderStatus(orderId, apiKey, secretKey);
 
-		Double remaining = Double.valueOf(statusClose.getRemaining_amount());
+		statusClose = loopCheckStatus(statusClose, apiKey, secretKey, 0);
+
 		Double executed = Double.valueOf(statusClose.getExecuted_amount());
-
-		executed = loopCheckStatus(remaining, executed, orderId, apiKey, secretKey, 0);
-
+		
 		//once executed, we update the iasion wallet
 		solde = solde-executed*Double.valueOf(statusClose.getAvg_execution_price());
 
@@ -172,25 +171,26 @@ public class LongProcessBeanImpl implements LongProcessBean {
 
 	}
 
-	private Double loopCheckStatus(Double remaining, Double executed, Long orderId, String apiKey, String secretKey, int tryNumber) throws MaxTriesExceededException, OrderStatusException, InterruptedException {
-
+	private BitFinexOrderStatus loopCheckStatus(BitFinexOrderStatus previousStatus, String apiKey, String secretKey, int tryNumber ) throws InterruptedException, OrderStatusException, MaxTriesExceededException {
+		
 		if ( tryNumber < ORDERSTATUS_MAXTRY) {				
 
-			if (remaining > 0 ) {
+			if (Double.valueOf(previousStatus.getRemaining_amount()) > 0 ) {
 
 				Thread.sleep(ORDERSTATUS_WAITINGTIME);
 
-				BitFinexOrderStatus status = bitfinexWao.orderStatus(orderId, apiKey, secretKey);
-				remaining = Double.valueOf(status.getRemaining_amount());
-				executed = Double.valueOf(status.getExecuted_amount());
-				return loopCheckStatus(remaining, executed, orderId, apiKey, secretKey, ++tryNumber);
+				BitFinexOrderStatus status = bitfinexWao.orderStatus(previousStatus.getOrder_id(), apiKey, secretKey);
+				
+				return loopCheckStatus(status, apiKey, secretKey, ++tryNumber);
 
 			} else 
-				return executed;
+				return previousStatus;
 
 		} else 
 			throw new MaxTriesExceededException("Too many tries for order status check before completion", "ORDERSTATUS_MAXTRY");
+		
 	}
+	
 
 	private Double proceedTransfer(Wallet wallet, UserAccount user, Long orderId, String apiKey, String secretKey) throws TransferException, InterruptedException, IOException {
 
