@@ -249,11 +249,11 @@ public class MacdBoImpl implements MacdBo {
 
 	}
 
-	private void displayTrigger(MacdTrigger matrix) {
+	private void displayTrigger(MacdTrigger triggers) {
 
-		for (int i=0; i< matrix.getMacd().size(); i++) {
+		for (int i=0; i< triggers.getMacd().size(); i++) {
 			try {
-				System.out.println(matrix.getData().getData().get(i).getTime() +","+ matrix.getData().getData().get(i).getClose()+","+matrix.getMacd().get(i)+","+matrix.getAmacd().get(i)+","+matrix.getDelta().get(i)+","+matrix.getTrend().get(i)+","+matrix.getTrigger().get(i));
+				System.out.println(triggers.getData().getData().get(i).getTime() +","+ triggers.getData().getData().get(i).getClose()+","+triggers.getMacd().get(i)+","+triggers.getAmacd().get(i)+","+triggers.getDelta().get(i)+","+triggers.getTrend().get(i)+","+triggers.getTrigger().get(i));
 			
 			} catch (Exception e) {
 				System.out.println("Erreur: "+i+" - "+e.getMessage());

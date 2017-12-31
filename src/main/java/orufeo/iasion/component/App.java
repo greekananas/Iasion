@@ -11,7 +11,7 @@ public class App {
 	public static void main(String... args) throws Exception {
 		
 		MacdBo macdBo = new MacdBoImpl();
-		
+				
 		Integer aggregateBig = 12;
 		Integer aggregateSmall = 4;
 		
@@ -22,11 +22,13 @@ public class App {
 		macdSettings.setMACDLength(9);
 		
 		macdBo.init();
-		
+				
 		MacdTrend matrixTrend = macdBo.analyzeTrend("BTC", "USD", aggregateBig, "bitfinex", macdSettings);
 		MacdTrigger matrixTrigger = macdBo.analyzeTrigger("BTC", "USD", aggregateSmall, "bitfinex", macdSettings, matrixTrend);
-		
-		
+
+		String signal = matrixTrigger.getTrigger().get(matrixTrigger.getTrigger().size()-1);
+
+				
 	}
-	
+		
 }

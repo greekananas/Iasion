@@ -4,13 +4,14 @@ import java.util.List;
 
 import lombok.Setter;
 import orufeo.iasion.dao.UserAccountDao;
+import orufeo.iasion.dao.UserAccountDaoImpl;
 import orufeo.iasion.data.dto.Authentication;
 import orufeo.iasion.data.objects.storage.UserAccount;
 
 public class UserAccountBoImpl implements UserAccountBo {
 
 	@Setter private UserAccountDao userAccountDao;
-	
+
 	@Override
 	public Authentication authenticate(String login, String password) {
 		

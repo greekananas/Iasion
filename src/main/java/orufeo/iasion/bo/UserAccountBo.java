@@ -22,5 +22,5 @@ public interface UserAccountBo {
 	void update(UserAccount userAccount);
 	
 	void delete(String guid);
-
+	
 }

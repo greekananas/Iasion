@@ -57,7 +57,7 @@ public class OrchestratorSRV {
 		String exchange = args.get("exchange");  								//"bitfinex";
 
 		if (ORCHESTRATOR_TOKEN.equals(token)) {
-
+				
 			MacdSettings macdSettings = new MacdSettings();
 
 			macdSettings.setFastLength(fastLength);
