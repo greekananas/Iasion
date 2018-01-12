@@ -21,7 +21,7 @@
         <AsyncLogger name="org.mule" level="info" additivity="false">
                 <AppenderRef ref="RollingFile"/>
         </AsyncLogger>
-        <AsyncLogger name="com.amano" level="info" additivity="false">
+        <AsyncLogger name="orupheo" level="info" additivity="false">
                 <AppenderRef ref="RollingFile"/>
         </AsyncLogger>
         
