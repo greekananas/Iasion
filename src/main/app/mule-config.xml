@@ -201,11 +201,13 @@
 				<expression-transformer
 					expression="#[message.payload='{ \u0022status\u0022: \u0022KO\u0022, \u0022code\u0022: 555, \u0022reason\u0022:\u0022Invalid checksum\u0022 }']" />
 			</when>
-		</choice>
 
-		<otherwise>
-			<logger level="DEBUG" message="OtherCase" />
-		</otherwise>
+
+			<otherwise>
+				<logger level="DEBUG" message="OtherCase" />
+			</otherwise>
+
+		</choice>
 
 	</flow>
 
