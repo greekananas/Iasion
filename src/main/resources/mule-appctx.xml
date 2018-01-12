@@ -38,7 +38,7 @@
 
 	<!--<bean id="tikaConfig" class="org.apache.tika.config.TikaConfig" />-->
 
-	<bean id="authenticateSRV" class="orufeo.iasion.component.AuthenticationSRV" >
+	<bean id="authenticationSRV" class="orufeo.iasion.component.AuthenticationSRV" >
 		<property name="userAccountBo" ref="userAccountBO" />
 	</bean>
 
