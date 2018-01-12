@@ -187,20 +187,21 @@
 				property="http.relative.path" />
 			<spring-object bean="authenticationSRV" />
 		</pooled-component>
+		<choice>
+			<when expression="#[(path contains 'resetInit') and (payload is null)]">
+				<!-- <logger level="INFO" message="resetInit error, send back code 555"
+					/> -->
+				<expression-transformer
+					expression="#[message.payload='{ \u0022status\u0022: \u0022KO\u0022, \u0022code\u0022: 555, \u0022reason\u0022:\u0022Invalid\u0022 }' ]" />
+			</when>
 
-		<when expression="#[(path contains 'resetInit') and (payload is null)]">
-			<!-- <logger level="INFO" message="resetInit error, send back code 555" 
-				/> -->
-			<expression-transformer
-				expression="#[message.payload='{ \u0022status\u0022: \u0022KO\u0022, \u0022code\u0022: 555, \u0022reason\u0022:\u0022Invalid\u0022 }' ]" />
-		</when>
-
-		<when expression="#[(path contains 'resetPassword') and (payload is null)]">
-			<!-- <logger level="INFO" message="resetPassword error, send back code 
-				555" /> -->
-			<expression-transformer
-				expression="#[message.payload='{ \u0022status\u0022: \u0022KO\u0022, \u0022code\u0022: 555, \u0022reason\u0022:\u0022Invalid checksum\u0022 }']" />
-		</when>
+			<when expression="#[(path contains 'resetPassword') and (payload is null)]">
+				<!-- <logger level="INFO" message="resetPassword error, send back code
+					555" /> -->
+				<expression-transformer
+					expression="#[message.payload='{ \u0022status\u0022: \u0022KO\u0022, \u0022code\u0022: 555, \u0022reason\u0022:\u0022Invalid checksum\u0022 }']" />
+			</when>
+		</choice>
 
 		<otherwise>
 			<logger level="DEBUG" message="OtherCase" />
