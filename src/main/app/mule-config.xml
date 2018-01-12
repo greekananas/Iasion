@@ -153,7 +153,7 @@
 	<flow name="authentication">
 		<description></description>
 		<http:inbound-endpoint host="${serverHost}"
-			connector-ref="MultiPartHttpConnector" port="${serverPort}" path="backoffice"
+			connector-ref="MultiPartHttpConnector" port="${serverPort}" path="authentication"
 			exchange-pattern="request-response">
 			<message-filter onUnaccepted="CookieRejectionFlow"
 				throwOnUnaccepted="false">
