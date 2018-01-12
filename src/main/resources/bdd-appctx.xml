@@ -61,7 +61,7 @@
 		<property name="mapper" ref="jacksonObjectMapper" />
 	</bean>
 
-	<bean id="userAccount" class="orufeo.iasion.dao.UserAccountDaoImpl"
+	<bean id="userAccountDAO" class="orufeo.iasion.dao.UserAccountDaoImpl"
 		init-method="init">
 		<property name="transactionManager" ref="transactionManager" />
 		<property name="mapper" ref="jacksonObjectMapper" />
@@ -79,7 +79,7 @@
 		<property name="mapper" ref="jacksonObjectMapper" />
 	</bean>
 
-	<bean id="bitfinexWAO" class="orufeo.iasion.wao.BitFinexWaoImpl" >
+	<bean id="bitfinexWAO" class="orufeo.iasion.wao.BitfinexWaoImpl" >
 		<property name="BITFINEX_DOMAIN" value="${iasion.urldomain}" />
 		<property name="BITFINEX_PROTOCOL" value="${iasion.urlprotocol}" />
 		<property name="BITFINEX_ALGORITHM_HMACSHA384" value="${iasion.hmacsha384}" />

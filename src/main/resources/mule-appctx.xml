@@ -36,7 +36,7 @@
 	<!-- METIERS -->
 	<!-- ####################################################### -->
 
-	<bean id="tikaConfig" class="org.apache.tika.config.TikaConfig" />
+	<!--<bean id="tikaConfig" class="org.apache.tika.config.TikaConfig" />-->
 
 	<bean id="authenticateSRV" class="orufeo.iasion.component.AuthenticationSRV" >
 		<property name="userAccountBo" ref="userAccountBO" />
@@ -93,7 +93,6 @@
 	<bean id="walletBO" class="orufeo.iasion.bo.WalletBoImpl">
 		<property name="userAccountDao" ref="userAccountDAO" />
 		<property name="walletHistoryDao" ref="walletHistoryDAO" />
-		<property name="userAccountDao" ref="userAccountDAO" />
 	</bean>
 	
 	<bean id="longProcessBEAN" class="orufeo.iasion.bean.LongProcessBeanImpl">
