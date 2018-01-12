@@ -4,6 +4,9 @@
 	<groupId>orufeo</groupId>
 	<artifactId>iasion</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
+	<packaging>mule</packaging>
+	<name>Mule orupheo Iasion</name>
+
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
