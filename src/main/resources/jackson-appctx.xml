@@ -39,7 +39,7 @@
 		<property name="arguments">
 			<list>
 				<value type="org.codehaus.jackson.map.SerializationConfig.Feature">INDENT_OUTPUT</value>
-				<value>${amano.json.jackson.prettyprint}</value>
+				<value>${iasion.json.jackson.prettyprint}</value>
 			</list>
 		</property>
 	</bean>
